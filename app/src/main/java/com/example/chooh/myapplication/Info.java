@@ -15,10 +15,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.KeyEvent;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,10 +28,41 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
+import static java.lang.Thread.sleep;
+
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
     long LOCATION_REFRESH_TIME=333;
     float LOCATION_REFRESH_DISTANCE=1;
+
+    private static final String TAG = "MainActivity";
+    private static final String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
+    private static final String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
+
+    private MqttAndroidClient mqttClient;
+    private MqttConnectOptions mqttOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +72,9 @@ public class Info extends AppCompatActivity {
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_LOCATION);
 
-        final LinearLayout linearLayout=(LinearLayout)findViewById(R.id.sent_info);
-
         Bundle extras=getIntent().getExtras();
         final int[] ia=extras.getIntArray("select");
-        for(int i:ia){
-            TextView textView=new TextView(this);
-            textView.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
-            linearLayout.addView(textView);
-        }
+        final TextView textView=(TextView)findViewById(R.id.sent_info);
 
         SensorManager manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         final ArrayList<Sensor> sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));
@@ -81,45 +100,80 @@ public class Info extends AppCompatActivity {
             }
             System.out.println(content);
             names=new JSONObject(content);
-
+            Log.i("shunqi",names.toString());
         }catch (Exception e){
             e.printStackTrace();
         }
 
         final JSONObject final_names=names;
+        final JSONObject object=new JSONObject();
 
         for(int j=0;j<ia.length;j++){
             final int i=j;
             SensorEventListener listener=new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
+
                     if(event.sensor.equals(selected.get(i))){
-                        JSONArray array=new JSONArray();
                         JSONArray nameArray=null;
                         try{
                             nameArray=(JSONArray)final_names.get(sensorNames.get(i));
-                            Log.i("shunqi",nameArray.toString());
                         }catch(JSONException e){
                             e.printStackTrace();
-                            Log.i("shunqi","In Exception");
                         }
                         try{
                             for(int x=0;x<event.values.length;x++){
+
                                 if(nameArray==null){
-                                    array.put(new JSONObject().put(
-                                            "Unknown",event.values[x]
-                                    ));
+                                    object.put(sensorNames.get(i)+"-unknown-key"+(x+1),event.values[x]);
                                 }else{
-                                    array.put(new JSONObject().put(
-                                            (String)nameArray.get(x),event.values[x]
-                                    ));
+                                    object.put(sensorNames.get(i)+"-"+(String)nameArray.get(x),event.values[x]);
                                 }
                             }
-                            JSONObject object=new JSONObject();
+                            Log.i("shunqi",object.toString());
+                            textView.setText(object.toString());
+                            //test
+                            Toast.makeText(getApplicationContext(),"meow",Toast.LENGTH_LONG).show();
 
-                            object.put(sensorNames.get(i),array);
-                            TextView text=(TextView)linearLayout.getChildAt(i);
-                            text.setText(object.toString());
+                            final String payload = object.toString();
+                            try {
+
+                                setupMqtt(getApplicationContext());
+                                connectMqtt();
+
+                                mqttClient.setCallback(new MqttCallbackExtended() {
+                                    @Override
+                                    public void connectComplete(boolean reconnect, String serverURI) {
+                                        Log.d(TAG, "Connected to: " + serverURI);
+
+                                        MqttMessage message = new MqttMessage();
+                                        message.setPayload(payload.getBytes());
+                                        try {
+                                            mqttClient.publish("v1/devices/me/telemetry", message);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void connectionLost(Throwable cause) {
+                                        Log.e(TAG, "The Connection was lost.", cause);
+                                    }
+
+                                    @Override
+                                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+                                        Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
+                                    }
+
+                                    @Override
+                                    public void deliveryComplete(IMqttDeliveryToken token) {
+                                        Log.d(TAG, "Published telemetry data: " + payload );
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }catch (JSONException e){
                             e.printStackTrace();
                         }
@@ -130,15 +184,10 @@ public class Info extends AppCompatActivity {
                 public void onAccuracyChanged(Sensor sensor, int accuracy) {}
             };
 
-            manager.registerListener(listener,selected.get(i),333333);
+            manager.registerListener(listener,selected.get(i),3333333);
         }
 
-        for(int i=0;i<linearLayout.getChildCount();i++){
-            TextView textView=(TextView)linearLayout.getChildAt(i);
-            if(textView.getText().equals("")){
-                textView.setText("No Data");
-            }
-        }
+        //No data
 
         final TextView locationText=(TextView)findViewById(R.id.location);
 
@@ -170,6 +219,12 @@ public class Info extends AppCompatActivity {
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
             Location location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if(location!=null){
+                try{
+                    object.put("Latitude",location.getLatitude());
+                    object.put("Longitude",location.getLongitude());
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
                 String text="Latitude: "+location.getLatitude()
                         +"\nLongitude: "+location.getLongitude();
                 locationText.setText(text);
@@ -188,5 +243,79 @@ public class Info extends AppCompatActivity {
             finish();
         }
         return super.onKeyDown(key,event);
+    }
+
+    void setupMqtt(Context ctx) {
+        mqttClient = new MqttAndroidClient(getBaseContext(), MQTT_URL, MqttClient.generateClientId());
+        mqttOptions = new MqttConnectOptions();
+
+        /**
+         * SSL broker requires a certificate to authenticate their connection
+         * Certificate can be found in resources folder /res/raw/
+         */
+
+        SocketFactory.SocketFactoryOptions socketFactoryOptions = new SocketFactory.SocketFactoryOptions();
+        try {
+            // socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.client));
+            socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.mqttsvr));
+            socketFactoryOptions.withClientP12InputStream(ctx.getResources().openRawResource(R.raw.mqttclient));
+            socketFactoryOptions.withClientP12Password(CLIENT_KEYSTORE_PASSWORD);
+            mqttOptions.setSocketFactory(new SocketFactory(socketFactoryOptions));
+        } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | KeyManagementException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void connectMqtt() {
+        try {
+
+            final IMqttToken token = mqttClient.connect(mqttOptions);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // We are connected
+                    Log.d(TAG, "connected, token:" + asyncActionToken.toString());
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.e(TAG, "not connected: " + asyncActionToken.toString(), exception);
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    void mqttDisconnect() {
+        try {
+            IMqttToken disconToken = mqttClient.disconnect();
+            disconToken.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.d(TAG, "disconnected");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken,
+                                      Throwable exception) {
+
+
+                    Log.e(TAG, "couldnt disconnect", exception);
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "Disconnecting MQTT connection");
+        mqttDisconnect();
     }
 }
