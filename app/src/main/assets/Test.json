@@ -1,0 +1,96 @@
+{
+    "Accelerometer":[
+        "x",
+        "y",
+        "z"
+    ],
+    "Magnetic Field":[
+        "x",
+        "y",
+        "z"
+    ],
+    "Gyroscope":[
+        "x",
+        "y",
+        "z"
+    ],
+    "Light":["light"],
+    "Pressure":["pressure"],
+    "Proximity":["proximity"],
+    "Gravity":[
+        "x",
+        "y",
+        "z"
+    ],
+    "Linear Acceleration":[
+        "x",
+        "y",
+        "z"
+    ],
+    "Rotation Vector":[
+        "x*sin(θ/2)",
+        "y*sin(θ/2)",
+        "z*sin(θ/2)",
+        "cos(θ/2)",
+        " estimated heading accuracy"
+    ],
+    "Orientation":[
+        "Azimuth",
+        "Pitch",
+        "Roll"
+    ],
+    "Relative Humidity":["relative humidity"],
+    "Ambient Temperature":["ambient temperature"],
+    "Magnetic Field Uncalibrated":[
+        "x_uncalib",
+        "y_uncalib",
+        "z_uncalib",
+        "x_bias",
+        "y_bias",
+        "z_bias"
+    ],
+    "Game Rotation Vector":[
+        "x*sin(θ/2)",
+        "y*sin(θ/2)",
+        "z*sin(θ/2)",
+        "cos(θ/2)"
+    ],
+    "Gyroscope Uncalibrated":[
+        "angular speed x",
+        "angular speed y",
+        "angular speed z",
+        "estimated drift x",
+        "estimated drift y",
+        "estimated drift z"
+    ],
+    "6-DoF Pose Detect":[
+        "x*sin(θ/2)",
+        "y*sin(θ/2)",
+        "z*sin(θ/2)",
+        "cos(θ/2)",
+        "Translation along x axis from an arbitrary origin",
+        "Translation along y axis from an arbitrary origin",
+        "Translation along z axis from an arbitrary origin",
+        "Delta quaternion rotation x*sin(θ/2)",
+        "Delta quaternion rotation y*sin(θ/2)",
+        "Delta quaternion rotation z*sin(θ/2)",
+        "Delta quaternion rotation cos(θ/2)",
+        "Delta translation along x axis",
+        "Delta translation along y axis",
+        "Delta translation along z axis",
+        "Sequence number"
+    ],
+    "Stationary Detect":["stationary detect"],
+    "Motion Detect":["motion detect"],
+    "Heart Beat":["heart beat"],
+    "Low Latency Offbody Detect":["off-body state"],
+    "Accelerometer Uncalibrated":[
+        "x_uncalib ",
+        "y_uncalib ",
+        "z_uncalib ",
+        "x_bias",
+        "y_bias",
+        "z_bias"
+    ],
+    "Step Counter":["step count"]
+}
