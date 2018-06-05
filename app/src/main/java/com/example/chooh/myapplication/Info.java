@@ -132,48 +132,51 @@ public class Info extends AppCompatActivity {
                             }
                             Log.i("shunqi",object.toString());
                             textView.setText(object.toString());
-                            //test
-                            Toast.makeText(getApplicationContext(),"meow",Toast.LENGTH_LONG).show();
 
                             final String payload = object.toString();
-                            try {
 
-                                setupMqtt(getApplicationContext());
-                                connectMqtt();
 
-                                mqttClient.setCallback(new MqttCallbackExtended() {
-                                    @Override
-                                    public void connectComplete(boolean reconnect, String serverURI) {
-                                        Log.d(TAG, "Connected to: " + serverURI);
+                            //test
+                            Toast.makeText(getApplicationContext(),payload,Toast.LENGTH_LONG).show();
 
-                                        MqttMessage message = new MqttMessage();
-                                        message.setPayload(payload.getBytes());
-                                        try {
-                                            mqttClient.publish("v1/devices/me/telemetry", message);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-
-                                    }
-
-                                    @Override
-                                    public void connectionLost(Throwable cause) {
-                                        Log.e(TAG, "The Connection was lost.", cause);
-                                    }
-
-                                    @Override
-                                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-                                        Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
-                                    }
-
-                                    @Override
-                                    public void deliveryComplete(IMqttDeliveryToken token) {
-                                        Log.d(TAG, "Published telemetry data: " + payload );
-                                    }
-                                });
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+//                            try {
+//
+//                                setupMqtt(getApplicationContext());
+//                                connectMqtt();
+//
+//                                mqttClient.setCallback(new MqttCallbackExtended() {
+//                                    @Override
+//                                    public void connectComplete(boolean reconnect, String serverURI) {
+//                                        Log.d(TAG, "Connected to: " + serverURI);
+//
+//                                        MqttMessage message = new MqttMessage();
+//                                        message.setPayload(payload.getBytes());
+//                                        try {
+//                                            mqttClient.publish("v1/devices/me/telemetry", message);
+//                                        } catch (Exception e) {
+//                                            e.printStackTrace();
+//                                        }
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void connectionLost(Throwable cause) {
+//                                        Log.e(TAG, "The Connection was lost.", cause);
+//                                    }
+//
+//                                    @Override
+//                                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+//                                        Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
+//                                    }
+//
+//                                    @Override
+//                                    public void deliveryComplete(IMqttDeliveryToken token) {
+//                                        Log.d(TAG, "Published telemetry data: " + payload );
+//                                    }
+//                                });
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
                         }catch (JSONException e){
                             e.printStackTrace();
                         }
