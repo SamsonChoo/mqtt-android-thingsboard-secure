@@ -14,6 +14,8 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -38,7 +40,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final String payload = "{\"key1\":\"value1\", \"key2\":true, \"key3\": 3.0, \"key4\": 4}";
+        final JSONObject object=new JSONObject();
+        try {
+            object.put("meow",1.12301512312431414);
+            object.put("woof",1.120411204812381231);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        final String payload = object.toString();
         try {
 
             setupMqtt(this);
