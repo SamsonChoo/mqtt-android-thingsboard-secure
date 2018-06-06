@@ -52,10 +52,17 @@ import java.security.cert.CertificateException;
 
 import static java.lang.Thread.sleep;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
     long LOCATION_REFRESH_TIME=333;
     float LOCATION_REFRESH_DISTANCE=1;
+
+    private SensorEventListener listener;
+    private SensorManager manager;
+    private final Map<Integer,Long> time_map=new HashMap<>();
 
     private static final String TAG = "MainActivity";
     private static final String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
@@ -63,6 +70,8 @@ public class Info extends AppCompatActivity {
 
     private MqttAndroidClient mqttClient;
     private MqttConnectOptions mqttOptions;
+
+    private final int interval=500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +81,9 @@ public class Info extends AppCompatActivity {
         setupMqtt(getApplicationContext());
         connectMqtt();
 
+        Toast.makeText(getApplicationContext(),"meow",Toast.LENGTH_LONG).show();
+
+
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_LOCATION);
 
@@ -79,7 +91,7 @@ public class Info extends AppCompatActivity {
         final int[] ia=extras.getIntArray("select");
         final TextView textView=(TextView)findViewById(R.id.sent_info);
 
-        SensorManager manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         final ArrayList<Sensor> sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));
         final ArrayList<Sensor> selected=new ArrayList<>();
         final ArrayList<String> sensorNames=new ArrayList<>();
@@ -111,30 +123,32 @@ public class Info extends AppCompatActivity {
         final JSONObject final_names=names;
         final JSONObject object=new JSONObject();
 
-        for(int j=0;j<ia.length;j++){
-            final int i=j;
-            SensorEventListener listener=new SensorEventListener() {
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-
-                    if(event.sensor.equals(selected.get(i))){
-                        JSONArray nameArray=null;
-                        try{
-                            nameArray=(JSONArray)final_names.get(sensorNames.get(i));
-                        }catch(JSONException e){
+        listener=new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                for (int i = 0; i < ia.length; i++) {
+                    if (event.sensor.equals(selected.get(i))) {
+                        JSONArray nameArray = null;
+                        try {
+                            nameArray = (JSONArray) final_names.get(sensorNames.get(i));
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        try{
-                            for(int x=0;x<event.values.length;x++){
+                        try {
+                            for (int x = 0; x < event.values.length; x++) {
 
-                                if(nameArray==null){
-                                    object.put(sensorNames.get(i)+"-unknown-key"+(x+1),event.values[x]);
-                                }else{
-                                    object.put(sensorNames.get(i)+"-"+(String)nameArray.get(x),event.values[x]);
+                                if (nameArray == null) {
+                                    object.put(sensorNames.get(i) + "-unknown-key" + (x + 1), event.values[x]);
+                                } else {
+                                    object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                 }
                             }
-                            Log.i("shunqi",object.toString());
-                            textView.setText(object.toString());
+                            time_map.put(1, System.currentTimeMillis());
+                            if (time_map.get(1) - time_map.get(0) > interval) {
+                                Log.i("shunqi", object.toString());
+                                textView.setText(object.toString());
+                                time_map.put(0, System.currentTimeMillis());
+                            }
 
                             final String payload = object.toString();
 
@@ -155,7 +169,7 @@ public class Info extends AppCompatActivity {
                                             mqttClient.publish("v1/devices/me/telemetry", message);
                                         } catch (Exception e) {
                                             e.printStackTrace();
-                                            Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
+                                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                                         }
 
                                     }
@@ -172,24 +186,27 @@ public class Info extends AppCompatActivity {
 
                                     @Override
                                     public void deliveryComplete(IMqttDeliveryToken token) {
-                                        Log.d(TAG, "Published telemetry data: " + payload );
+                                        Log.d(TAG, "Published telemetry data: " + payload);
                                     }
                                 });
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             }
-                        }catch (JSONException e){
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
                 }
+            }
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+        };
 
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-            };
-
-            manager.registerListener(listener,selected.get(i),99333333);
+        time_map.put(0,System.currentTimeMillis());
+        time_map.put(1,new Long(1));
+        for(Sensor s:selected){
+            manager.registerListener(listener,s,1000000);
         }
 
         //No data
@@ -322,5 +339,6 @@ public class Info extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "Disconnecting MQTT connection");
         mqttDisconnect();
+        manager.unregisterListener(listener);
     }
 }
