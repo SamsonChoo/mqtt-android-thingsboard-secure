@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         try {
-
+            
             setupMqtt(this);
             connectMqtt();
 
