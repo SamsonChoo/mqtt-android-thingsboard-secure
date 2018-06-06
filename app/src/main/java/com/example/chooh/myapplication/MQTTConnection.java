@@ -39,15 +39,7 @@ private static final String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
 private MqttAndroidClient mqttClient;
 private MqttConnectOptions mqttOptions;
 
-protected void pub(Context appctx) {
-
-final JSONObject object=new JSONObject();
-        try {
-        object.put("meow",1.12301512312431414);
-        object.put("woof",1.120411204812381231);
-        } catch (JSONException e) {
-        e.printStackTrace();
-        }
+public void pub(Context appctx, JSONObject object) {
 
 final String payload = object.toString();
         try {

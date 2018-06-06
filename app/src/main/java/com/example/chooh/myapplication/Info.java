@@ -55,6 +55,8 @@ import static java.lang.Thread.sleep;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.example.chooh.myapplication.MQTTConnection;
+
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
     long LOCATION_REFRESH_TIME=333;
@@ -150,49 +152,8 @@ public class Info extends AppCompatActivity {
                                 time_map.put(0, System.currentTimeMillis());
                             }
 
-                            final String payload = object.toString();
-
-
-                            //test
-                            //Toast.makeText(getApplicationContext(),payload,Toast.LENGTH_LONG).show();
-
-                            try {
-
-                                mqttClient.setCallback(new MqttCallbackExtended() {
-                                    @Override
-                                    public void connectComplete(boolean reconnect, String serverURI) {
-                                        Log.d(TAG, "Connected to: " + serverURI);
-
-                                        MqttMessage message = new MqttMessage();
-                                        message.setPayload(payload.getBytes());
-                                        try {
-                                            mqttClient.publish("v1/devices/me/telemetry", message);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                                        }
-
-                                    }
-
-                                    @Override
-                                    public void connectionLost(Throwable cause) {
-                                        Log.e(TAG, "The Connection was lost.", cause);
-                                    }
-
-                                    @Override
-                                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-                                        Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
-                                    }
-
-                                    @Override
-                                    public void deliveryComplete(IMqttDeliveryToken token) {
-                                        Log.d(TAG, "Published telemetry data: " + payload);
-                                    }
-                                });
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                            }
+                            MQTTConnection mqttConnection = new MQTTConnection();
+                            mqttConnection.pub(getApplicationContext(),object);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
