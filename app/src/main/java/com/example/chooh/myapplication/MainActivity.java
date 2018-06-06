@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         final JSONObject object=new JSONObject();
         try {
-            object.put("meow",1.12301512312431414);
+            object.put("meow",6);
             object.put("woof",1.120411204812381231);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -58,14 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void connectComplete(boolean reconnect, String serverURI) {
                     Log.d(TAG, "Connected to: " + serverURI);
-
-                    MqttMessage message = new MqttMessage();
-                    message.setPayload(payload.getBytes());
-                    try {
-                        mqttClient.publish("v1/devices/me/telemetry", message);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    pub(payload);
 
                 }
 
@@ -87,7 +81,37 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+        try {
+
+            setupMqtt(this);
+            connectMqtt();
+
+            mqttClient.setCallback(new MqttCallbackExtended() {
+                @Override
+                public void connectComplete(boolean reconnect, String serverURI) {
+                    Log.d(TAG, "Connected to: " + serverURI);
+                    pub(payload);
+
+                }
+
+                @Override
+                public void connectionLost(Throwable cause) {
+                    Log.e(TAG, "The Connection was lost.", cause);
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    Log.d(TAG, "Published telemetry data: " + payload );
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }}
 
     void setupMqtt(Context ctx) {
         mqttClient = new MqttAndroidClient(getBaseContext(), MQTT_URL, MqttClient.generateClientId());
@@ -161,5 +185,16 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "Disconnecting MQTT connection");
         mqttDisconnect();
+    }
+
+    public void pub(String payload){
+        MqttMessage message = new MqttMessage();
+        message.setPayload(payload.getBytes());
+        try {
+            mqttClient.publish("v1/devices/me/telemetry", message);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this.getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
+        }
     }
 }
