@@ -104,12 +104,12 @@ public class SocketFactory extends javax.net.ssl.SSLSocketFactory{
             Enumeration<String> aliasesCA = caKeyStore.aliases();
             for (; aliasesCA.hasMoreElements(); ) {
                 String o = aliasesCA.nextElement();
-            }
+               }
 
 
 
         } else {
-            KeyStore keyStore = KeyStore.getInstance("AndroidCAStore");
+             KeyStore keyStore = KeyStore.getInstance("AndroidCAStore");
             keyStore.load(null);
             tmf.init(keyStore);
         }
