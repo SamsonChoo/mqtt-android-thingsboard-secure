@@ -68,7 +68,7 @@ public class Info extends AppCompatActivity {
     private SensorManager manager;
     private final Map<Integer,Long> time_map=new HashMap<>();
 
-    private final int interval=500;
+    private final int interval=1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,31 +119,31 @@ public class Info extends AppCompatActivity {
         listener=new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                for (int i = 0; i < ia.length; i++) {
-                    if (event.sensor.equals(selected.get(i))) {
-                        JSONArray nameArray = null;
-                        try {
-                            nameArray = (JSONArray) final_names.get(sensorNames.get(i));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            for (int x = 0; x < event.values.length; x++) {
-
-                                if (nameArray == null) {
-                                    object.put(sensorNames.get(i) + "-unknown-key" + (x + 1), event.values[x]);
-                                } else {
-                                    object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
-                                }
+                time_map.put(1, System.currentTimeMillis());
+                if (time_map.get(1) - time_map.get(0) > interval) {
+                    for (int i = 0; i < ia.length; i++) {
+                        if (event.sensor.equals(selected.get(i))) {
+                            JSONArray nameArray = null;
+                            try {
+                                nameArray = (JSONArray) final_names.get(sensorNames.get(i));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                            time_map.put(1, System.currentTimeMillis());
-                            if (time_map.get(1) - time_map.get(0) > interval) {
+                            try {
+                                for (int x = 0; x < event.values.length; x++) {
+
+                                    if (nameArray == null) {
+                                        object.put(sensorNames.get(i) + "-unknown-key" + (x + 1), event.values[x]);
+                                    } else {
+                                        object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
+                                    }
+                                }
                                 Log.i("shunqi", object.toString());
                                 textView.setText(object.toString());
                                 time_map.put(0, System.currentTimeMillis());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
                     }
                 }
