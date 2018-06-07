@@ -9,6 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service android:name="org.eclipse.paho.android.service.MqttService" >
+        </service>
         <activity android:name=".Main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,7 +19,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".Info" />
-        <activity android:name=".MQTTConnection" />
     </application>
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />

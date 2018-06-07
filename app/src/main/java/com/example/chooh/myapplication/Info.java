@@ -31,10 +31,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.text.method.ScrollingMovementMethod;
-import android.util.TypedValue;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import java.util.List;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -53,8 +49,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
-import com.example.chooh.myapplication.MQTTConnection;
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +62,7 @@ public class Info extends AppCompatActivity {
     private SensorManager manager;
     private final Map<Integer,Long> time_map=new HashMap<>();
 
-    private final int interval=500;
+    private final int interval=200;
 
     private MqttAndroidClient mqttClient;
     private MqttConnectOptions mqttOptions;
@@ -155,7 +149,7 @@ public class Info extends AppCompatActivity {
                                 e.printStackTrace();
                             }
 
-                            final String payload = "{\"woof\":5}";
+                            final String payload = object.toString();
 
                             //test
                             //Toast.makeText(getApplicationContext(),payload,Toast.LENGTH_LONG).show();
@@ -277,10 +271,6 @@ public class Info extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         manager.unregisterListener(listener);
-    }
-
-    public void send_data(View view){
-        startActivity(new Intent(Info.this,MQTTConnection.class));
     }
 
     void setupMqtt(Context ctx) {
