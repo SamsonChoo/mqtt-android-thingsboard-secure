@@ -17,8 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Info" />
-        <activity android:name=".Test"></activity>
-        <service android:name=".MQTTConnection" ></service>
+        <activity android:name=".MQTTConnection" />
     </application>
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />

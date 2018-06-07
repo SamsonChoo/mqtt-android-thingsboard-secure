@@ -1,13 +1,10 @@
 package com.example.chooh.myapplication;
 
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -18,8 +15,6 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -28,61 +23,71 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import static android.content.ContentValues.TAG;
 
-public class MQTTConnection extends Service{
+public class MQTTConnection extends AppCompatActivity{
 
-private static final String TAG = "MainActivity";
-private static final String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
-// private static final String clientId = "android-tb-mqtt-1";
-private static final String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
+    private MqttAndroidClient mqttClient;
+    private MqttConnectOptions mqttOptions;
 
-private MqttAndroidClient mqttClient;
-private MqttConnectOptions mqttOptions;
+    private static final String TAG = "MainActivity";
+    private static final String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
+    private static final String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
 
-public void pub(Context appctx, JSONObject object) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
 
-final String payload = object.toString();
+        final String payload = "{\"woof\":5}";
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.send_data);
+
+        //test
+        //Toast.makeText(getApplicationContext(),payload,Toast.LENGTH_LONG).show();
+
         try {
 
-        setupMqtt(appctx);
-        connectMqtt();
+            setupMqtt(this);
+            connectMqtt();
 
-        mqttClient.setCallback(new MqttCallbackExtended() {
-@Override
-public void connectComplete(boolean reconnect, String serverURI) {
-        Log.d(TAG, "Connected to: " + serverURI);
+            mqttClient.setCallback(new MqttCallbackExtended() {
+                @Override
+                public void connectComplete(boolean reconnect, String serverURI) {
+                    Log.d(TAG, "Connected to: " + serverURI);
 
-        MqttMessage message = new MqttMessage();
-        message.setPayload(payload.getBytes());
-        try {
-        mqttClient.publish("v1/devices/me/telemetry", message);
+                    MqttMessage message = new MqttMessage();
+                    message.setPayload(payload.getBytes());
+                    try {
+                        mqttClient.publish("v1/devices/me/telemetry", message);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                    }
+
+                }
+
+                @Override
+                public void connectionLost(Throwable cause) {
+                    Log.e(TAG, "The Connection was lost.", cause);
+                }
+
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
+                }
+
+                @Override
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                    Log.d(TAG, "Published telemetry data: " + payload);
+                }
+            });
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
         }
 
-        }
+    }
 
-@Override
-public void connectionLost(Throwable cause) {
-        Log.e(TAG, "The Connection was lost.", cause);
-        }
-
-@Override
-public void messageArrived(String topic, MqttMessage message) throws Exception {
-        Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
-        }
-
-@Override
-public void deliveryComplete(IMqttDeliveryToken token) {
-        Log.d(TAG, "Published telemetry data: " + payload );
-        }
-        });
-        } catch (Exception e) {
-        e.printStackTrace();
-        }
-        }
-
-        void setupMqtt(Context ctx) {
+    void setupMqtt(Context ctx) {
         mqttClient = new MqttAndroidClient(getBaseContext(), MQTT_URL, MqttClient.generateClientId());
         mqttOptions = new MqttConnectOptions();
 
@@ -93,72 +98,65 @@ public void deliveryComplete(IMqttDeliveryToken token) {
 
         SocketFactory.SocketFactoryOptions socketFactoryOptions = new SocketFactory.SocketFactoryOptions();
         try {
-        // socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.client));
-        socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.mqttsvr));
-        socketFactoryOptions.withClientP12InputStream(ctx.getResources().openRawResource(R.raw.mqttclient));
-        socketFactoryOptions.withClientP12Password(CLIENT_KEYSTORE_PASSWORD);
-        mqttOptions.setSocketFactory(new SocketFactory(socketFactoryOptions));
+            // socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.client));
+            socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.mqttsvr));
+            socketFactoryOptions.withClientP12InputStream(ctx.getResources().openRawResource(R.raw.mqttclient));
+            socketFactoryOptions.withClientP12Password(CLIENT_KEYSTORE_PASSWORD);
+            mqttOptions.setSocketFactory(new SocketFactory(socketFactoryOptions));
         } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | KeyManagementException | UnrecoverableKeyException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
-        }
+    }
 
-        void connectMqtt() {
+    void connectMqtt() {
         try {
 
-final IMqttToken token = mqttClient.connect(mqttOptions);
-        token.setActionCallback(new IMqttActionListener() {
-@Override
-public void onSuccess(IMqttToken asyncActionToken) {
-        // We are connected
-        Log.d(TAG, "connected, token:" + asyncActionToken.toString());
-        }
+            final IMqttToken token = mqttClient.connect(mqttOptions);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // We are connected
+                    Log.d(TAG, "connected, token:" + asyncActionToken.toString());
+                }
 
-@Override
-public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-        // Something went wrong e.g. connection timeout or firewall problems
-        Log.e(TAG, "not connected: " + asyncActionToken.toString(), exception);
-        }
-        });
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.e(TAG, "not connected: " + asyncActionToken.toString(), exception);
+                }
+            });
         } catch (MqttException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
 
-        }
+    }
 
-        void mqttDisconnect() {
+    void mqttDisconnect() {
         try {
-        IMqttToken disconToken = mqttClient.disconnect();
-        disconToken.setActionCallback(new IMqttActionListener() {
-@Override
-public void onSuccess(IMqttToken asyncActionToken) {
-        Log.d(TAG, "disconnected");
-        }
+            IMqttToken disconToken = mqttClient.disconnect();
+            disconToken.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.d(TAG, "disconnected");
+                }
 
-@Override
-public void onFailure(IMqttToken asyncActionToken,
-        Throwable exception) {
+                @Override
+                public void onFailure(IMqttToken asyncActionToken,
+                                      Throwable exception) {
 
 
-        Log.e(TAG, "couldnt disconnect", exception);
-        }
-        });
+                    Log.e(TAG, "couldnt disconnect", exception);
+                }
+            });
         } catch (MqttException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
 
-        }
-
-        @Override
-public void onDestroy() {
+    }
+    @Override
+    protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "Disconnecting MQTT connection");
         mqttDisconnect();
-        }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 }

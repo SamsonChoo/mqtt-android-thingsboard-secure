@@ -2,6 +2,7 @@ package com.example.chooh.myapplication;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.hardware.Sensor;
@@ -16,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,10 +30,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import android.content.Context;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.text.method.ScrollingMovementMethod;
+import android.util.TypedValue;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import java.util.List;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -50,12 +53,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
-import static java.lang.Thread.sleep;
+import com.example.chooh.myapplication.MQTTConnection;
+
 
 import java.util.HashMap;
 import java.util.Map;
-
-import com.example.chooh.myapplication.MQTTConnection;
 
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
@@ -66,13 +68,6 @@ public class Info extends AppCompatActivity {
     private SensorManager manager;
     private final Map<Integer,Long> time_map=new HashMap<>();
 
-    private static final String TAG = "MainActivity";
-    private static final String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
-    private static final String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
-
-    private MqttAndroidClient mqttClient;
-    private MqttConnectOptions mqttOptions;
-
     private final int interval=500;
 
     @Override
@@ -80,18 +75,14 @@ public class Info extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
 
-        setupMqtt(getApplicationContext());
-        connectMqtt();
-
-        Toast.makeText(getApplicationContext(),"meow",Toast.LENGTH_LONG).show();
-
-
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_LOCATION);
 
         Bundle extras=getIntent().getExtras();
+
         final int[] ia=extras.getIntArray("select");
         final TextView textView=(TextView)findViewById(R.id.sent_info);
+        textView.setMovementMethod(new ScrollingMovementMethod());
 
         manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         final ArrayList<Sensor> sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));
@@ -151,9 +142,6 @@ public class Info extends AppCompatActivity {
                                 textView.setText(object.toString());
                                 time_map.put(0, System.currentTimeMillis());
                             }
-
-                            MQTTConnection mqttConnection = new MQTTConnection();
-                            mqttConnection.pub(getApplicationContext(),object);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -228,78 +216,13 @@ public class Info extends AppCompatActivity {
         return super.onKeyDown(key,event);
     }
 
-    void setupMqtt(Context ctx) {
-        mqttClient = new MqttAndroidClient(getBaseContext(), MQTT_URL, MqttClient.generateClientId());
-        mqttOptions = new MqttConnectOptions();
-
-        /**
-         * SSL broker requires a certificate to authenticate their connection
-         * Certificate can be found in resources folder /res/raw/
-         */
-
-        SocketFactory.SocketFactoryOptions socketFactoryOptions = new SocketFactory.SocketFactoryOptions();
-        try {
-            // socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.client));
-            socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.mqttsvr));
-            socketFactoryOptions.withClientP12InputStream(ctx.getResources().openRawResource(R.raw.mqttclient));
-            socketFactoryOptions.withClientP12Password(CLIENT_KEYSTORE_PASSWORD);
-            mqttOptions.setSocketFactory(new SocketFactory(socketFactoryOptions));
-        } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | KeyManagementException | UnrecoverableKeyException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void connectMqtt() {
-        try {
-
-            final IMqttToken token = mqttClient.connect(mqttOptions);
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    // We are connected
-                    Log.d(TAG, "connected, token:" + asyncActionToken.toString());
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // Something went wrong e.g. connection timeout or firewall problems
-                    Log.e(TAG, "not connected: " + asyncActionToken.toString(), exception);
-                }
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    void mqttDisconnect() {
-        try {
-            IMqttToken disconToken = mqttClient.disconnect();
-            disconToken.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.d(TAG, "disconnected");
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken,
-                                      Throwable exception) {
-
-
-                    Log.e(TAG, "couldnt disconnect", exception);
-                }
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "Disconnecting MQTT connection");
-        mqttDisconnect();
         manager.unregisterListener(listener);
+    }
+
+    public void send_data(View view){
+        startActivity(new Intent(Info.this,MQTTConnection.class));
     }
 }
