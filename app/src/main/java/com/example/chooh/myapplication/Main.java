@@ -133,7 +133,7 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 //        }
 
 
-        Intent intent=new Intent(this, Info.class);
+        Intent intent=new Intent(this, MQTTConnection.class);
         intent.putExtra("select",ia);
         startActivity(intent);
     }
