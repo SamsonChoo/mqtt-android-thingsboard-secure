@@ -137,7 +137,7 @@ public class Info extends AppCompatActivity {
                                 for (int x = 0; x < event.values.length; x++) {
 
                                     if (nameArray == null) {
-                                        object.put(sensorNames.get(i) + "-unknown-key" + (x + 1), event.values[x]);
+                                        object.put(event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
                                     } else {
                                         object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                     }
