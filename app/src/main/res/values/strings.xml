@@ -7,4 +7,16 @@
     <string name="clear">Clear</string>
     <string name="notDetected">Not Detected</string>
     <string name="send">Send</string>
+    <string name="firstTime">You do not have any configuration now. Add a new one.</string>
+    <string name="addConfig">Add Configuration</string>
+    <string name="channel">Channel:</string>
+    <string name="options">Connection Options</string>
+    <string name="server">Server:</string>
+    <string name="port">Port:</string>
+    <string name="keystoreFile">Keystore File:</string>
+    <string name="keystorePwd">Keystore Pwd:</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="select">Select</string>
 </resources>
