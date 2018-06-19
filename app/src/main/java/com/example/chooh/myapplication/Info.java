@@ -111,6 +111,27 @@ public class Info extends AppCompatActivity {
         JSONObject names=null;
 
         try{
+            mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
+
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
+
+            IMqttToken token = mqttAndroidClient.connect(options);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    //we are connected! subscribe for rpc
+                    subscribeToTopic();
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.d(TAG, "Failure " + exception.toString());
+
+                }
+            });
+
             AssetManager assetManager=getAssets();
             InputStream is=assetManager.open("Test.json");
             String content="";
@@ -162,8 +183,6 @@ public class Info extends AppCompatActivity {
 
                             final String payload = object.toString();
 
-                            mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
-
                             try {
                                 MqttConnectOptions options = new MqttConnectOptions();
                                 options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
@@ -180,7 +199,6 @@ public class Info extends AppCompatActivity {
                                             encodedPayload = payload.getBytes("UTF-8");
                                             MqttMessage message = new MqttMessage(encodedPayload);
                                             mqttAndroidClient.publish(topic, message);
-                                            subscribeToTopic();
                                             bool = true;
                                         } catch (MqttException | UnsupportedEncodingException e) {
                                             e.printStackTrace();
