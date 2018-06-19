@@ -57,11 +57,12 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-        ArrayList<Boolean> ba=adapoer.getBa();
-        int length=0;
-        for(boolean b:ba){
-            if(b)length++;
+        ArrayList<Boolean> ba = adapoer.getBa();
+        int length = 0;
+        for (boolean b : ba) {
+            if (b) length++;
         }
+
 
         if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)!=PackageManager.PERMISSION_GRANTED){
             Toast.makeText(this,"Please enable the PHONE permission!",Toast.LENGTH_LONG).show();
@@ -73,11 +74,11 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
             return;
         }
 
-        int[] ia=new int[length];
-        int pointer=0;
-        for(int i=0;i<ba.size();i++){
-            if(ba.get(i)){
-                ia[pointer++]=i;
+        int[] ia = new int[length];
+        int pointer = 0;
+        for (int i = 0; i < ba.size(); i++) {
+            if (ba.get(i)) {
+                ia[pointer++] = i;
             }
         }
 
@@ -86,5 +87,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
         intent.putExtra("configName",configName);
         intent.putExtra("uri",uri);
         startActivity(intent);
+
     }
 }
