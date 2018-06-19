@@ -179,12 +179,7 @@ public class Info extends AppCompatActivity {
                                     if (nameArray == null) {
                                         object.put(fid+"-"+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
                                     } else {
-<<<<<<< HEAD
-                                        String s = getIntent().getStringExtra("EXTRA_SESSION_ID");
-                                        object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
-=======
                                         object.put(fid+"-"+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
->>>>>>> master
                                     }
                                 }
                                 Log.i("shunqi", object.toString());

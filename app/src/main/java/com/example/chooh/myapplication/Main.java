@@ -8,10 +8,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-<<<<<<< HEAD
-=======
 import android.telephony.TelephonyManager;
->>>>>>> master
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -66,10 +63,7 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
             if (b) length++;
         }
 
-<<<<<<< HEAD
-        if (length == 0) {
-            Toast.makeText(this, "Please select one sensor!", Toast.LENGTH_LONG).show();
-=======
+
         if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)!=PackageManager.PERMISSION_GRANTED){
             Toast.makeText(this,"Please enable the PHONE permission!",Toast.LENGTH_LONG).show();
             return;
@@ -77,7 +71,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
         if(length==0){
             Toast.makeText(this,"Please select one sensor!",Toast.LENGTH_LONG).show();
->>>>>>> master
             return;
         }
 
