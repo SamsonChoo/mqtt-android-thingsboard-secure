@@ -199,9 +199,9 @@ public class Configuration extends AppCompatActivity {
                     int pos=channel.getSelectedItemPosition();
                     String channelSave;
                     if(pos==0){
-                        channelSave="MQTT";
+                        channelSave="MQTTs";
                     }else{
-                        channelSave="HTTP";
+                        channelSave="HTTPs";
                     }
 
                     JSONObject objectSave=new JSONObject();

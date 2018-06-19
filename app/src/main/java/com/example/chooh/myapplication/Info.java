@@ -151,7 +151,7 @@ public class Info extends AppCompatActivity {
         }
 
         if(!server.equals("")&&!port.equals("")){
-            serverUri =server+port;
+            serverUri ="ssl://" + server+ ":" + port;
         }
 
         final TextView textView=(TextView)findViewById(R.id.sent_info);
