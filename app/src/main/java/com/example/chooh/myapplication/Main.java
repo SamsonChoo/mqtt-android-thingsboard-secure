@@ -22,19 +22,17 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
     private SensorManager manager;
     private sensorAdapter adapoer;
-    private ArrayList<Sensor> selected=new ArrayList<>();
-    private ArrayList<String> sensorNames=new ArrayList<>();
-    private ArrayList<Sensor> sensors;
-    private TelephonyManager telephonyManager;
+    private String configName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        configName=getIntent().getStringExtra("configName");
+
         manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         List<Sensor> sensorList=manager.getSensorList(Sensor.TYPE_ALL);
-        sensors=new ArrayList<>(sensorList);
 
         ListView sensors=(ListView)findViewById(R.id.sensor_list);
         adapoer=new sensorAdapter(this,sensorList);
@@ -51,8 +49,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
                 recreate();
             }
         });
-
-        telephonyManager=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     @Override
@@ -83,6 +79,7 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
         Intent intent=new Intent(this, Info.class);
         intent.putExtra("select",ia);
+        intent.putExtra("configName",configName);
         startActivity(intent);
     }
 }

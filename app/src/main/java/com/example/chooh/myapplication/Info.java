@@ -27,6 +27,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -68,9 +70,13 @@ public class Info extends AppCompatActivity {
     private MqttAndroidClient mqttClient;
     private MqttConnectOptions mqttOptions;
 
-    private static final String TAG = "MainActivity";
-    private static final String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
-    private static final String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
+    private static String configName;
+    private static String TAG = "MainActivity";
+    private static String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
+    private static String server="";
+    private static String port="";
+    private static String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
+    private static String channel;
 
     private String id;
     private TelephonyManager telephonyManager;
@@ -88,6 +94,49 @@ public class Info extends AppCompatActivity {
         Bundle extras=getIntent().getExtras();
 
         final int[] ia=extras.getIntArray("select");
+        configName=extras.getString("configName");
+
+        File dir=this.getFilesDir();
+        final File file=new File(dir,"config");
+
+        String configContent="";
+        try{
+            BufferedReader br=new BufferedReader(new FileReader(file));
+            String line;
+            while ((line=br.readLine())!=null){
+                configContent+=line;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        JSONArray array=null;
+        try{
+            array=new JSONArray(configContent);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        if(array!=null){
+            for(int i=0;i<array.length();i++){
+                try{
+                    JSONObject o=array.getJSONObject(i);
+                    if(o.getString("name").equals(configName)){
+                        server=o.getString("server");
+                        port=o.getString("port");
+                        CLIENT_KEYSTORE_PASSWORD=o.getString("pwd");
+                        channel=o.getString("channel");
+                    }
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        if(!server.equals("")&&!port.equals("")){
+            MQTT_URL=server+port;
+        }
+
         final TextView textView=(TextView)findViewById(R.id.sent_info);
         textView.setMovementMethod(new ScrollingMovementMethod());
 

@@ -1,9 +1,13 @@
 package com.example.chooh.myapplication;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,7 +42,11 @@ public class Configuration extends AppCompatActivity {
     private EditText server;
     private EditText port;
     private EditText keyPwd;
+    private TextView keyFile;
     private JSONArray array=null;
+    private Uri uri=null;
+
+    private static final int READ_REQUEST_CODE=42;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +67,8 @@ public class Configuration extends AppCompatActivity {
         final Spinner channel=(Spinner)findViewById(R.id.channels);
         server=(EditText)findViewById(R.id.inputServer);
         port=(EditText)findViewById(R.id.inputPort);
+        keyFile=(TextView)findViewById(R.id.fileName);
+        final Button selectFile=(Button)findViewById(R.id.selectFile);
         keyPwd=(EditText)findViewById(R.id.inputPwd);
         Button save=(Button)findViewById(R.id.save);
         Button cancel=(Button)findViewById(R.id.cancel);
@@ -119,6 +129,22 @@ public class Configuration extends AppCompatActivity {
                 first_part.setVisibility(View.GONE);
                 second_part.setVisibility(View.VISIBLE);
                 setEmpty();
+            }
+        });
+
+        selectFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                perFormFileSearch();
+                selectFile.setVisibility(View.GONE);
+            }
+        });
+
+        keyFile.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                perFormFileSearch();
+                return false;
             }
         });
 
@@ -267,6 +293,45 @@ public class Configuration extends AppCompatActivity {
 
             }
         });
+    }
+
+    public void perFormFileSearch(){
+        Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        startActivityForResult(intent,READ_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData){
+        if(requestCode==READ_REQUEST_CODE && resultCode== Activity.RESULT_OK){
+            if(resultData!=null){
+                uri=resultData.getData();
+                Log.i("shunqi","Uri: "+uri.toString());
+                if(uri!=null){
+                    setFileName(uri);
+                }
+            }
+        }
+    }
+
+    public void setFileName(Uri uri){
+        Cursor cursor=this.getContentResolver()
+                .query(uri,null,null,null,null);
+        try{
+            if(cursor!=null && cursor.moveToFirst()){
+                String displayName=cursor.getString(
+                        cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                );
+                Log.i("shunqi",displayName);
+                if(!displayName.equals("")){
+                    keyFile.setText(displayName);
+                    keyFile.setVisibility(View.VISIBLE);
+                }
+            }
+        }finally {
+            cursor.close();
+        }
     }
 
     boolean checkEmpty(){

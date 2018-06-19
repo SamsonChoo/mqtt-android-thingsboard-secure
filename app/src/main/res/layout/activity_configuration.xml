@@ -163,6 +163,23 @@
             android:textSize="20sp"
             android:textColor="@color/black"
             android:layout_marginTop="13dp"/>
+        <TextView
+            android:id="@+id/fileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:layout_below="@id/port"
+            android:layout_toRightOf="@id/keyFile"
+            android:layout_marginTop="13dp"
+            android:layout_marginLeft="5dp"/>
+        <Button
+            android:id="@+id/selectFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select"
+            android:layout_below="@id/port"
+            android:layout_toRightOf="@id/fileName"
+            android:layout_marginLeft="5dp"/>
 
         <TextView
             android:id="@+id/keyPwd"
