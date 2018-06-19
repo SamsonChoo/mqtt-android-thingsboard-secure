@@ -251,6 +251,7 @@ public class Configuration extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent=new Intent(getApplicationContext(),Main.class);
                 intent.putExtra("configName",configSpinner.getSelectedItem().toString());
+                intent.putExtra("uri",uri.toString());
                 startActivity(intent);
             }
         });

@@ -12,6 +12,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -80,6 +81,8 @@ public class Info extends AppCompatActivity {
 
     private String id;
     private TelephonyManager telephonyManager;
+    private Uri uri=null;
+    private InputStream inputStream=null;
 
     boolean bool = true;
 
@@ -95,6 +98,15 @@ public class Info extends AppCompatActivity {
 
         final int[] ia=extras.getIntArray("select");
         configName=extras.getString("configName");
+        uri=Uri.parse(extras.getString("uri"));
+
+        if(uri!=null){
+            try{
+                inputStream=getContentResolver().openInputStream(uri);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
 
         File dir=this.getFilesDir();
         final File file=new File(dir,"config");

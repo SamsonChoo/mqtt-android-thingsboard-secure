@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -23,13 +24,16 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
     private SensorManager manager;
     private sensorAdapter adapoer;
     private String configName;
+    private String uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        configName=getIntent().getStringExtra("configName");
+        Bundle extras=getIntent().getExtras();
+        configName=extras.getString("configName");
+        uri=extras.getString("uri");
 
         manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         List<Sensor> sensorList=manager.getSensorList(Sensor.TYPE_ALL);
@@ -80,6 +84,7 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
         Intent intent=new Intent(this, Info.class);
         intent.putExtra("select",ia);
         intent.putExtra("configName",configName);
+        intent.putExtra("uri",uri);
         startActivity(intent);
     }
 }
