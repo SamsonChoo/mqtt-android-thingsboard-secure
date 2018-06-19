@@ -1,11 +1,17 @@
 package com.example.chooh.myapplication;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+<<<<<<< HEAD
+=======
+import android.telephony.TelephonyManager;
+>>>>>>> master
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +28,7 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
     private ArrayList<Sensor> selected=new ArrayList<>();
     private ArrayList<String> sensorNames=new ArrayList<>();
     private ArrayList<Sensor> sensors;
+    private TelephonyManager telephonyManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +54,8 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
                 recreate();
             }
         });
+
+        telephonyManager=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     @Override
@@ -57,8 +66,18 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
             if (b) length++;
         }
 
+<<<<<<< HEAD
         if (length == 0) {
             Toast.makeText(this, "Please select one sensor!", Toast.LENGTH_LONG).show();
+=======
+        if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)!=PackageManager.PERMISSION_GRANTED){
+            Toast.makeText(this,"Please enable the PHONE permission!",Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if(length==0){
+            Toast.makeText(this,"Please select one sensor!",Toast.LENGTH_LONG).show();
+>>>>>>> master
             return;
         }
 

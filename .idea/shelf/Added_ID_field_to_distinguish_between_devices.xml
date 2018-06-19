@@ -1,9 +1,0 @@
-<changelist name="Added_ID_field_to_distinguish_between_devices" date="1528786586881" recycled="false">
-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Added_ID_field_to_distinguish_between_devices/shelved.patch" />
-  <option name="DESCRIPTION" value="Added ID field to distinguish between devices" />
-  <binary>
-    <option name="BEFORE_PATH" value=".idea/caches/build_file_checksums.ser" />
-    <option name="AFTER_PATH" value=".idea/caches/build_file_checksums.ser" />
-    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Added_ID_field_to_distinguish_between_devices/build_file_checksums.ser" />
-  </binary>
-</changelist>

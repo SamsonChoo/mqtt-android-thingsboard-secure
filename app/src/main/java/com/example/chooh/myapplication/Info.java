@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -80,6 +81,8 @@ public class Info extends AppCompatActivity {
     private static final String TAG = Info.class.getName();
     private MqttAndroidClient mqttAndroidClient;
 
+    private String id;
+    private TelephonyManager telephonyManager;
 
     boolean bool = true;
 
@@ -101,6 +104,12 @@ public class Info extends AppCompatActivity {
         final ArrayList<Sensor> sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));
         final ArrayList<Sensor> selected=new ArrayList<>();
         final ArrayList<String> sensorNames=new ArrayList<>();
+
+        telephonyManager=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)==PackageManager.PERMISSION_GRANTED){
+            id=telephonyManager.getDeviceId();
+        }
+        final String fid=id;
 
         for(int i:ia){
             Sensor sensor=sensors.get(i);
@@ -168,10 +177,14 @@ public class Info extends AppCompatActivity {
                                 for (int x = 0; x < event.values.length; x++) {
 
                                     if (nameArray == null) {
-                                        object.put(event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
+                                        object.put(fid+"-"+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
                                     } else {
+<<<<<<< HEAD
                                         String s = getIntent().getStringExtra("EXTRA_SESSION_ID");
                                         object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
+=======
+                                        object.put(fid+"-"+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
+>>>>>>> master
                                     }
                                 }
                                 Log.i("shunqi", object.toString());
@@ -263,8 +276,8 @@ public class Info extends AppCompatActivity {
             Location location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if(location!=null){
                 try{
-                    object.put("Latitude",location.getLatitude());
-                    object.put("Longitude",location.getLongitude());
+                    object.put(fid+"-"+"Latitude",location.getLatitude());
+                    object.put(fid+"-"+"Longitude",location.getLongitude());
                 }catch (JSONException e){
                     e.printStackTrace();
                 }

@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<<<<<<< HEAD
+=======
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+>>>>>>> master
 
     <application
         android:allowBackup="true"
@@ -18,13 +22,22 @@
         android:theme="@style/AppTheme">
         <service android:name="org.eclipse.paho.android.service.MqttService"></service>
 
+<<<<<<< HEAD
         <activity android:name=".Main">
+=======
+        <activity android:name=".Configuration">
+>>>>>>> master
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".Info" />
+        <activity android:name=".Main"></activity>
     </application>
 
+<<<<<<< HEAD
 </manifest>
+=======
+</manifest>
+>>>>>>> master
