@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -22,19 +23,20 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
     private SensorManager manager;
     private sensorAdapter adapoer;
-    private ArrayList<Sensor> selected=new ArrayList<>();
-    private ArrayList<String> sensorNames=new ArrayList<>();
-    private ArrayList<Sensor> sensors;
-    private TelephonyManager telephonyManager;
+    private String configName;
+    private String uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Bundle extras=getIntent().getExtras();
+        configName=extras.getString("configName");
+        uri=extras.getString("uri");
+
         manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         List<Sensor> sensorList=manager.getSensorList(Sensor.TYPE_ALL);
-        sensors=new ArrayList<>(sensorList);
 
         ListView sensors=(ListView)findViewById(R.id.sensor_list);
         adapoer=new sensorAdapter(this,sensorList);
@@ -51,8 +53,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
                 recreate();
             }
         });
-
-        telephonyManager=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
     }
 
     @Override
@@ -84,6 +84,8 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
         Intent intent=new Intent(this, Info.class);
         intent.putExtra("select",ia);
+        intent.putExtra("configName",configName);
+        intent.putExtra("uri",uri);
         startActivity(intent);
 
     }

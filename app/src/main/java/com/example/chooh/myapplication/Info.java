@@ -2,7 +2,6 @@ package com.example.chooh.myapplication;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.hardware.Sensor;
@@ -12,13 +11,13 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -39,10 +40,7 @@ import android.text.method.ScrollingMovementMethod;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -74,15 +72,22 @@ public class Info extends AppCompatActivity {
 
     private final int interval=200;
 
-    private static final String serverUri = "ssl://tb.hpe-innovation.center:8883";
-    private static final String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
-    private static final String certFile = "client.bks";
-    private static final String certPwd = "P@ssw0rd";
-    private static final String TAG = Info.class.getName();
+
+    private static String configName;
+    private static String TAG = Info.class.getName();
+    private static String serverUri = "ssl://tb.hpe-innovation.center:8883";
+    private static String server="";
+    private static String port="";
+    private static String certFile = "client.bks";
+    private static String certPwd = "P@ssw0rd";
+    private static String channel;
+    private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private MqttAndroidClient mqttAndroidClient;
 
     private String id;
     private TelephonyManager telephonyManager;
+    private Uri uri=null;
+    private InputStream inputStream=null;
 
     boolean bool = true;
 
@@ -97,6 +102,58 @@ public class Info extends AppCompatActivity {
         Bundle extras=getIntent().getExtras();
 
         final int[] ia=extras.getIntArray("select");
+        configName=extras.getString("configName");
+        uri=Uri.parse(extras.getString("uri"));
+
+        if(uri!=null){
+            try{
+                inputStream=getContentResolver().openInputStream(uri);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        File dir=this.getFilesDir();
+        final File file=new File(dir,"config");
+
+        String configContent="";
+        try{
+            BufferedReader br=new BufferedReader(new FileReader(file));
+            String line;
+            while ((line=br.readLine())!=null){
+                configContent+=line;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        JSONArray array=null;
+        try{
+            array=new JSONArray(configContent);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        if(array!=null){
+            for(int i=0;i<array.length();i++){
+                try{
+                    JSONObject o=array.getJSONObject(i);
+                    if(o.getString("name").equals(configName)){
+                        server=o.getString("server");
+                        port=o.getString("port");
+                        certPwd =o.getString("pwd");
+                        channel=o.getString("channel");
+                    }
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+
+            }
+        }
+
+        if(!server.equals("")&&!port.equals("")){
+            serverUri =server+port;
+        }
+
         final TextView textView=(TextView)findViewById(R.id.sent_info);
         textView.setMovementMethod(new ScrollingMovementMethod());
 
