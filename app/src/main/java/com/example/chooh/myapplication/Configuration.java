@@ -151,11 +151,25 @@ public class Configuration extends AppCompatActivity {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String fileSelected=keyFile.getText().toString();
+                int len=fileSelected.length();
                 boolean empty=checkEmpty();
+
                 if(empty){
                     AlertDialog alertDialog = new AlertDialog.Builder(Configuration.this).create();
                     alertDialog.setTitle("Alert");
                     alertDialog.setMessage("Please fill in all empty fields.");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                }else if(!fileSelected.substring(len-3,len).equals("bks")){
+                    AlertDialog alertDialog = new AlertDialog.Builder(Configuration.this).create();
+                    alertDialog.setTitle("Alert");
+                    alertDialog.setMessage("Please select correct bks file.");
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
@@ -211,6 +225,7 @@ public class Configuration extends AppCompatActivity {
                         objectSave.put("port",portSave);
                         objectSave.put("pwd",pwdSave);
                         objectSave.put("channel",channelSave);
+                        objectSave.put("uri",uri.toString());
                         array.put(objectSave);
 
                         FileOutputStream outputStream;
@@ -251,7 +266,6 @@ public class Configuration extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent=new Intent(getApplicationContext(),Main.class);
                 intent.putExtra("configName",configSpinner.getSelectedItem().toString());
-                intent.putExtra("uri",uri.toString());
                 startActivity(intent);
             }
         });

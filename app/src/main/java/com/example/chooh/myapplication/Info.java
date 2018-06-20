@@ -98,15 +98,6 @@ public class Info extends AppCompatActivity {
 
         final int[] ia=extras.getIntArray("select");
         configName=extras.getString("configName");
-        uri=Uri.parse(extras.getString("uri"));
-
-        if(uri!=null){
-            try{
-                inputStream=getContentResolver().openInputStream(uri);
-            }catch (IOException e){
-                e.printStackTrace();
-            }
-        }
 
         File dir=this.getFilesDir();
         final File file=new File(dir,"config");
@@ -137,11 +128,20 @@ public class Info extends AppCompatActivity {
                         port=o.getString("port");
                         CLIENT_KEYSTORE_PASSWORD=o.getString("pwd");
                         channel=o.getString("channel");
+                        uri=Uri.parse(o.getString("uri"));
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
 
+            }
+        }
+
+        if(uri!=null){
+            try{
+                inputStream=getContentResolver().openInputStream(uri);
+            }catch (IOException e){
+                e.printStackTrace();
             }
         }
 
