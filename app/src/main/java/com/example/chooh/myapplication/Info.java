@@ -364,7 +364,7 @@ public class Info extends AppCompatActivity {
     private SSLSocketFactory getSSLSocketFactory(Context context, String keystore, String password) throws
             MqttSecurityException {
         try {
-            InputStream keyStore = context.getResources().getAssets().open(keystore);
+            InputStream keyStore = inputStream;
             KeyStore km = KeyStore.getInstance("BKS");
             km.load(keyStore, password.toCharArray());
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
