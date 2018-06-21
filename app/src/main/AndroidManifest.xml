@@ -21,8 +21,7 @@
 
 
         <activity
-            android:name=".MainInfo"
-            android:label="@string/title_activity_main_info">
+            android:name=".Configuration">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,7 +29,8 @@
         </activity>
         <activity android:name=".Info" />
         <activity android:name=".Main" />
-        <activity android:name=".Configuration"/>
+        <activity android:name=".MainInfo"
+            android:label="@string/title_activity_main_info"/>
     </application>
 </manifest>
 
