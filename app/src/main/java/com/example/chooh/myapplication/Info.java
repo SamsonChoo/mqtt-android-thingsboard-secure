@@ -2,7 +2,6 @@ package com.example.chooh.myapplication;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.hardware.Sensor;
@@ -19,10 +18,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,16 +32,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 
 import android.text.method.ScrollingMovementMethod;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -57,6 +56,11 @@ import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
     long LOCATION_REFRESH_TIME=333;
@@ -68,16 +72,17 @@ public class Info extends AppCompatActivity {
 
     private final int interval=200;
 
-    private MqttAndroidClient mqttClient;
-    private MqttConnectOptions mqttOptions;
 
     private static String configName;
-    private static String TAG = "MainActivity";
-    private static String MQTT_URL = "ssl://tb.hpe-innovation.center:8883";
+    private static String TAG = Info.class.getName();
+    private static String serverUri = "ssl://tb.hpe-innovation.center:8883";
     private static String server="";
     private static String port="";
-    private static String CLIENT_KEYSTORE_PASSWORD = "P@ssw0rd";
+    private static String certFile = "client.bks";
+    private static String certPwd = "P@ssw0rd";
     private static String channel;
+    private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
+    private MqttAndroidClient mqttAndroidClient;
 
     private String id;
     private TelephonyManager telephonyManager;
@@ -126,7 +131,7 @@ public class Info extends AppCompatActivity {
                     if(o.getString("name").equals(configName)){
                         server=o.getString("server");
                         port=o.getString("port");
-                        CLIENT_KEYSTORE_PASSWORD=o.getString("pwd");
+                        certPwd =o.getString("pwd");
                         channel=o.getString("channel");
                         uri=Uri.parse(o.getString("uri"));
                     }
@@ -146,7 +151,7 @@ public class Info extends AppCompatActivity {
         }
 
         if(!server.equals("")&&!port.equals("")){
-            MQTT_URL=server+port;
+            serverUri =server+port;
         }
 
         final TextView textView=(TextView)findViewById(R.id.sent_info);
@@ -170,7 +175,29 @@ public class Info extends AppCompatActivity {
         }
 
         JSONObject names=null;
+
         try{
+            mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
+
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
+
+            IMqttToken token = mqttAndroidClient.connect(options);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    //we are connected! subscribe for rpc
+                    subscribeToTopic();
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.d(TAG, "Failure " + exception.toString());
+
+                }
+            });
+
             AssetManager assetManager=getAssets();
             InputStream is=assetManager.open("Test.json");
             String content="";
@@ -221,49 +248,38 @@ public class Info extends AppCompatActivity {
 
                             final String payload = object.toString();
 
-                            //test
-                            //Toast.makeText(getApplicationContext(),payload,Toast.LENGTH_LONG).show();
-
                             try {
+                                MqttConnectOptions options = new MqttConnectOptions();
+                                options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
 
-                                setupMqtt(getApplicationContext());
-                                connectMqtt();
-
-                                mqttClient.setCallback(new MqttCallbackExtended() {
+                                IMqttToken token = mqttAndroidClient.connect(options);
+                                token.setActionCallback(new IMqttActionListener() {
                                     @Override
-                                    public void connectComplete(boolean reconnect, String serverURI) {
-                                        Log.d(TAG, "Connected to: " + serverURI);
-
-                                        MqttMessage message = new MqttMessage();
-                                        message.setPayload(payload.getBytes());
+                                    public void onSuccess(IMqttToken asyncActionToken) {
+                                        // We are connected
+                                        Log.d(TAG, "onSuccess");
                                         try {
-                                            mqttClient.publish("v1/devices/me/telemetry", message);
-                                        } catch (Exception e) {
+                                            String topic = "v1/devices/me/telemetry";
+                                            byte[] encodedPayload = new byte[0];
+                                            encodedPayload = payload.getBytes("UTF-8");
+                                            MqttMessage message = new MqttMessage(encodedPayload);
+                                            mqttAndroidClient.publish(topic, message);
+                                            bool = true;
+                                        } catch (MqttException | UnsupportedEncodingException e) {
                                             e.printStackTrace();
-                                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                                         }
-                                        bool = true;
-
                                     }
 
                                     @Override
-                                    public void connectionLost(Throwable cause) {
-                                        Log.e(TAG, "The Connection was lost.", cause);
-                                    }
+                                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                                        // Something went wrong e.g. connection timeout or firewall problems
+                                        Log.d(TAG, "Failure " + exception.toString());
 
-                                    @Override
-                                    public void messageArrived(String topic, MqttMessage message) throws Exception {
-                                        Log.d(TAG, "Incoming message: " + new String(message.getPayload()));
-                                    }
-
-                                    @Override
-                                    public void deliveryComplete(IMqttDeliveryToken token) {
-                                        Log.d(TAG, "Published telemetry data: " + payload);
                                     }
                                 });
-                            } catch (Exception e) {
+
+                            } catch (MqttException e) {
                                 e.printStackTrace();
-                                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
                             }
                         }
                     }
@@ -340,56 +356,79 @@ public class Info extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mqttDisconnect();
         manager.unregisterListener(listener);
     }
 
-    void setupMqtt(Context ctx) {
-        mqttClient = new MqttAndroidClient(getBaseContext(), MQTT_URL, MqttClient.generateClientId());
-        mqttOptions = new MqttConnectOptions();
 
-        /**
-         * SSL broker requires a certificate to authenticate their connection
-         * Certificate can be found in resources folder /res/raw/
-         */
-
-        SocketFactory.SocketFactoryOptions socketFactoryOptions = new SocketFactory.SocketFactoryOptions();
+    private SSLSocketFactory getSSLSocketFactory(Context context, String keystore, String password) throws
+            MqttSecurityException {
         try {
-            // socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.client));
-            socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.mqttsvr));
-            socketFactoryOptions.withClientP12InputStream(ctx.getResources().openRawResource(R.raw.mqttclient));
-            socketFactoryOptions.withClientP12Password(CLIENT_KEYSTORE_PASSWORD);
-            mqttOptions.setSocketFactory(new SocketFactory(socketFactoryOptions));
-        } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | KeyManagementException | UnrecoverableKeyException e) {
-            e.printStackTrace();
+            InputStream keyStore = context.getResources().getAssets().open(keystore);
+            KeyStore km = KeyStore.getInstance("BKS");
+            km.load(keyStore, password.toCharArray());
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
+            kmf.init(km, password.toCharArray());
+
+            InputStream trustStore = context.getResources().getAssets().open(keystore);
+            KeyStore ts = KeyStore.getInstance("BKS");
+            ts.load(trustStore, password.toCharArray());
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
+            tmf.init(ts);
+
+            SSLContext ctx = SSLContext.getInstance("SSL");
+            ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            return ctx.getSocketFactory();
+        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException | KeyManagementException | UnrecoverableKeyException e) {
+            throw new MqttSecurityException(e);
         }
     }
 
-    void connectMqtt() {
+    public void subscribeToTopic(){
         try {
-
-            final IMqttToken token = mqttClient.connect(mqttOptions);
-            token.setActionCallback(new IMqttActionListener() {
+            mqttAndroidClient.subscribe("v1/devices/me/rpc/request/+", 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
-                    // We are connected
-                    Log.d(TAG, "connected, token:" + asyncActionToken.toString());
+                    Log.e(TAG,"Subscribed!");
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // Something went wrong e.g. connection timeout or firewall problems
-                    Log.e(TAG, "not connected: " + asyncActionToken.toString(), exception);
+                    Log.e(TAG,"Failed to subscribe");
                 }
             });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
 
+            // THIS DOES NOT WORK!
+            mqttAndroidClient.subscribe("v1/devices/me/rpc/request/+", 0, new IMqttMessageListener() {
+                @Override
+                public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    // message Arrived!
+                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+                    String[] parts = topic.split("/");
+                    String requestId = parts[5];
+                    try {
+                        String msg = "{\"meow\":\"meow\"}";
+                        topic = "v1/devices/me/rpc/response/" + requestId;
+                        byte[] encodedPayload = new byte[0];
+                        encodedPayload = msg.getBytes("UTF-8");
+                        message = new MqttMessage(encodedPayload);
+                        mqttAndroidClient.publish(topic, message);
+                        subscribeToTopic();
+                    } catch (MqttException | UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+        } catch (MqttException ex){
+            System.err.println("Exception whilst subscribing");
+            ex.printStackTrace();
+        }
     }
 
     void mqttDisconnect() {
         try {
-            IMqttToken disconToken = mqttClient.disconnect();
+            IMqttToken disconToken = mqttAndroidClient.disconnect();
             disconToken.setActionCallback(new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {

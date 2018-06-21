@@ -1,0 +1,200 @@
+Index: app/src/main/java/com/example/chooh/myapplication/Configuration.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/chooh/myapplication/Configuration.java	(date 1528785313733)
++++ app/src/main/java/com/example/chooh/myapplication/Configuration.java	(date 1528785313733)
+@@ -0,0 +1,24 @@
++package com.example.chooh.myapplication;
++
++import android.content.Intent;
++import android.os.Bundle;
++import android.support.v7.app.AppCompatActivity;
++import android.view.View;
++import android.widget.EditText;
++
++
++public class Configuration extends AppCompatActivity{
++    @Override
++    protected void onCreate(Bundle savedInstanceState){
++        super.onCreate(savedInstanceState);
++        setContentView(R.layout.configuration);
++    }
++
++    public void login(View v){
++        EditText id = (EditText)findViewById(R.id.editText);
++        String ID = id.getText().toString();
++        Intent intent = new Intent(getBaseContext(), Main.class);
++        intent.putExtra("EXTRA_SESSION_ID", ID);
++        startActivity(intent);
++    }
++}
+\ No newline at end of file
+Index: app/src/main/res/layout/configuration.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/configuration.xml	(date 1528784450674)
++++ app/src/main/res/layout/configuration.xml	(date 1528784450674)
+@@ -0,0 +1,30 @@
++<?xml version="1.0" encoding="utf-8"?>
++<RelativeLayout
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent">
++
++    <EditText
++        android:id="@+id/editText"
++        android:layout_width="wrap_content"
++        android:layout_height="wrap_content"
++        android:layout_centerInParent="true"
++        android:ems="10"
++        android:inputType="textPersonName"
++        android:text="Device name"
++        tools:layout_editor_absoluteX="85dp"
++        tools:layout_editor_absoluteY="232dp" />
++
++    <Button
++        android:id="@+id/button"
++        android:layout_width="wrap_content"
++        android:layout_height="wrap_content"
++        android:layout_alignParentBottom="true"
++        android:layout_centerHorizontal="true"
++        android:layout_marginBottom="165dp"
++        android:text="Done"
++        android:onClick="login"
++        tools:layout_editor_absoluteX="148dp"
++        tools:layout_editor_absoluteY="316dp" />
++</RelativeLayout>
+\ No newline at end of file
+Index: app/src/main/res/values/dimens.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/dimens.xml	(date 1528783489149)
++++ app/src/main/res/values/dimens.xml	(date 1528783489149)
+@@ -0,0 +1,5 @@
++<resources>
++    <!-- Default screen margins, per the Android Design guidelines. -->
++    <dimen name="activity_horizontal_margin">16dp</dimen>
++    <dimen name="activity_vertical_margin">16dp</dimen>
++</resources>
+Index: app/src/main/java/com/example/chooh/myapplication/Info.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.chooh.myapplication;\n\nimport android.Manifest;\nimport android.content.Context;\nimport android.content.Intent;\nimport android.content.pm.PackageManager;\nimport android.content.res.AssetManager;\nimport android.hardware.Sensor;\nimport android.hardware.SensorEvent;\nimport android.hardware.SensorEventListener;\nimport android.hardware.SensorManager;\nimport android.location.Location;\nimport android.location.LocationListener;\nimport android.location.LocationManager;\nimport android.os.Bundle;\nimport android.support.v4.app.ActivityCompat;\nimport android.support.v7.app.AppCompatActivity;\nimport android.util.Log;\nimport android.view.KeyEvent;\nimport android.view.View;\nimport android.widget.TextView;\nimport android.widget.Toast;\n\nimport org.json.JSONArray;\nimport org.json.JSONException;\nimport org.json.JSONObject;\n\nimport java.io.BufferedReader;\nimport java.io.InputStream;\nimport java.io.InputStreamReader;\nimport java.util.ArrayList;\n\nimport android.text.method.ScrollingMovementMethod;\n\nimport org.eclipse.paho.android.service.MqttAndroidClient;\nimport org.eclipse.paho.client.mqttv3.IMqttActionListener;\nimport org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;\nimport org.eclipse.paho.client.mqttv3.IMqttToken;\nimport org.eclipse.paho.client.mqttv3.MqttCallbackExtended;\nimport org.eclipse.paho.client.mqttv3.MqttClient;\nimport org.eclipse.paho.client.mqttv3.MqttConnectOptions;\nimport org.eclipse.paho.client.mqttv3.MqttException;\nimport org.eclipse.paho.client.mqttv3.MqttMessage;\n\nimport java.io.IOException;\nimport java.security.KeyManagementException;\nimport java.security.KeyStoreException;\nimport java.security.NoSuchAlgorithmException;\nimport java.security.UnrecoverableKeyException;\nimport java.security.cert.CertificateException;\n\n\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class Info extends AppCompatActivity {\n    private static final int REQUEST_LOCATION=1;\n    long LOCATION_REFRESH_TIME=333;\n    float LOCATION_REFRESH_DISTANCE=1;\n\n    private SensorEventListener listener;\n    private SensorManager manager;\n    private final Map<Integer,Long> time_map=new HashMap<>();\n\n    private final int interval=200;\n\n    private MqttAndroidClient mqttClient;\n    private MqttConnectOptions mqttOptions;\n\n    private static final String TAG = \"MainActivity\";\n    private static final String MQTT_URL = \"ssl://tb.hpe-innovation.center:8883\";\n    private static final String CLIENT_KEYSTORE_PASSWORD = \"P@ssw0rd\";\n\n\n    boolean bool = true;\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_info);\n\n        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},\n                REQUEST_LOCATION);\n\n        Bundle extras=getIntent().getExtras();\n\n        final int[] ia=extras.getIntArray(\"select\");\n        final TextView textView=(TextView)findViewById(R.id.sent_info);\n        textView.setMovementMethod(new ScrollingMovementMethod());\n\n        manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);\n        final ArrayList<Sensor> sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));\n        final ArrayList<Sensor> selected=new ArrayList<>();\n        final ArrayList<String> sensorNames=new ArrayList<>();\n\n        for(int i:ia){\n            Sensor sensor=sensors.get(i);\n            selected.add(sensor);\n            sensorNames.add(sensorAdapter.sensorTypeToString(sensor.getType()));\n        }\n\n        JSONObject names=null;\n        try{\n            AssetManager assetManager=getAssets();\n            InputStream is=assetManager.open(\"Test.json\");\n            String content=\"\";\n            InputStreamReader ir=new InputStreamReader(is);\n            BufferedReader br=new BufferedReader(ir);\n            String st;\n            while ((st=br.readLine())!=null){\n                content+=st;\n            }\n            System.out.println(content);\n            names=new JSONObject(content);\n            Log.i(\"shunqi\",names.toString());\n        }catch (Exception e){\n            e.printStackTrace();\n        }\n\n        final JSONObject final_names=names;\n        final JSONObject object=new JSONObject();\n        listener=new SensorEventListener() {\n            @Override\n            public void onSensorChanged(SensorEvent event) {\n                time_map.put(1, System.currentTimeMillis());\n                if ((time_map.get(1) - time_map.get(0) > interval) && (bool==true) ){\n                    bool = false;\n                    for (int i = 0; i < ia.length; i++) {\n                        if (event.sensor.equals(selected.get(i))) {\n                            JSONArray nameArray = null;\n                            try {\n                                nameArray = (JSONArray) final_names.get(sensorNames.get(i));\n                            } catch (JSONException e) {\n                                e.printStackTrace();\n                            }\n                            try {\n                                for (int x = 0; x < event.values.length; x++) {\n\n                                    if (nameArray == null) {\n                                        object.put(sensorNames.get(i) + \"-unknown-key\" + (x + 1), event.values[x]);\n                                    } else {\n                                        object.put(sensorNames.get(i) + \"-\" + (String) nameArray.get(x), event.values[x]);\n                                    }\n                                }\n                                Log.i(\"shunqi\", object.toString());\n                                textView.setText(object.toString());\n                                time_map.put(0, System.currentTimeMillis());\n                            } catch (JSONException e) {\n                                e.printStackTrace();\n                            }\n\n                            final String payload = object.toString();\n\n                            //test\n                            //Toast.makeText(getApplicationContext(),payload,Toast.LENGTH_LONG).show();\n\n                            try {\n\n                                setupMqtt(getApplicationContext());\n                                connectMqtt();\n\n                                mqttClient.setCallback(new MqttCallbackExtended() {\n                                    @Override\n                                    public void connectComplete(boolean reconnect, String serverURI) {\n                                        Log.d(TAG, \"Connected to: \" + serverURI);\n\n                                        MqttMessage message = new MqttMessage();\n                                        message.setPayload(payload.getBytes());\n                                        try {\n                                            mqttClient.publish(\"v1/devices/me/telemetry\", message);\n                                        } catch (Exception e) {\n                                            e.printStackTrace();\n                                            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();\n                                        }\n                                        bool = true;\n\n                                    }\n\n                                    @Override\n                                    public void connectionLost(Throwable cause) {\n                                        Log.e(TAG, \"The Connection was lost.\", cause);\n                                    }\n\n                                    @Override\n                                    public void messageArrived(String topic, MqttMessage message) throws Exception {\n                                        Log.d(TAG, \"Incoming message: \" + new String(message.getPayload()));\n                                    }\n\n                                    @Override\n                                    public void deliveryComplete(IMqttDeliveryToken token) {\n                                        Log.d(TAG, \"Published telemetry data: \" + payload);\n                                    }\n                                });\n                            } catch (Exception e) {\n                                e.printStackTrace();\n                                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();\n                            }\n                        }\n                    }\n                }\n            }\n            @Override\n            public void onAccuracyChanged(Sensor sensor, int accuracy) {}\n        };\n\n        time_map.put(0,System.currentTimeMillis());\n        time_map.put(1,new Long(1));\n        for(Sensor s:selected){\n            manager.registerListener(listener,s,1000000);\n        }\n\n        //No data\n\n        final TextView locationText=(TextView)findViewById(R.id.location);\n\n        final LocationListener locationListener=new LocationListener() {\n            @Override\n            public void onLocationChanged(Location location) {\n                if(location!=null){\n                    String text=\"Latitude: \"+location.getLatitude()\n                            +\"\\nLongitude: \"+location.getLongitude();\n                    locationText.setText(text);\n                }else {\n                    Toast.makeText(getApplicationContext(),\"Unable to get changing location\",\n                            Toast.LENGTH_LONG).show();\n                }\n            }\n\n            @Override\n            public void onStatusChanged(String provider, int status, Bundle extras) {}\n\n            @Override\n            public void onProviderEnabled(String provider) {}\n\n            @Override\n            public void onProviderDisabled(String provider) {}\n        };\n\n\n        LocationManager mLocationManager=(LocationManager)getSystemService(LOCATION_SERVICE);\n        if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){\n            Location location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);\n            if(location!=null){\n                try{\n                    object.put(\"Latitude\",location.getLatitude());\n                    object.put(\"Longitude\",location.getLongitude());\n                }catch (JSONException e){\n                    e.printStackTrace();\n                }\n                String text=\"Latitude: \"+location.getLatitude()\n                        +\"\\nLongitude: \"+location.getLongitude();\n                locationText.setText(text);\n            }else {\n                Toast.makeText(this,\"Unable to get location\",Toast.LENGTH_LONG).show();\n            }\n\n            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,LOCATION_REFRESH_TIME,\n                    LOCATION_REFRESH_DISTANCE,locationListener);\n        }\n    }\n\n    @Override\n    public boolean onKeyDown(int key, KeyEvent event){\n        if(key==KeyEvent.KEYCODE_BACK){\n            finish();\n        }\n        return super.onKeyDown(key,event);\n    }\n\n    @Override\n    protected void onDestroy() {\n        super.onDestroy();\n        manager.unregisterListener(listener);\n    }\n\n    void setupMqtt(Context ctx) {\n        mqttClient = new MqttAndroidClient(getBaseContext(), MQTT_URL, MqttClient.generateClientId());\n        mqttOptions = new MqttConnectOptions();\n\n        /**\n         * SSL broker requires a certificate to authenticate their connection\n         * Certificate can be found in resources folder /res/raw/\n         */\n\n        SocketFactory.SocketFactoryOptions socketFactoryOptions = new SocketFactory.SocketFactoryOptions();\n        try {\n            // socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.client));\n            socketFactoryOptions.withCaInputStream(ctx.getResources().openRawResource(R.raw.mqttsvr));\n            socketFactoryOptions.withClientP12InputStream(ctx.getResources().openRawResource(R.raw.mqttclient));\n            socketFactoryOptions.withClientP12Password(CLIENT_KEYSTORE_PASSWORD);\n            mqttOptions.setSocketFactory(new SocketFactory(socketFactoryOptions));\n        } catch (IOException | NoSuchAlgorithmException | KeyStoreException | CertificateException | KeyManagementException | UnrecoverableKeyException e) {\n            e.printStackTrace();\n        }\n    }\n\n    void connectMqtt() {\n        try {\n\n            final IMqttToken token = mqttClient.connect(mqttOptions);\n            token.setActionCallback(new IMqttActionListener() {\n                @Override\n                public void onSuccess(IMqttToken asyncActionToken) {\n                    // We are connected\n                    Log.d(TAG, \"connected, token:\" + asyncActionToken.toString());\n                }\n\n                @Override\n                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {\n                    // Something went wrong e.g. connection timeout or firewall problems\n                    Log.e(TAG, \"not connected: \" + asyncActionToken.toString(), exception);\n                }\n            });\n        } catch (MqttException e) {\n            e.printStackTrace();\n        }\n\n    }\n\n    void mqttDisconnect() {\n        try {\n            IMqttToken disconToken = mqttClient.disconnect();\n            disconToken.setActionCallback(new IMqttActionListener() {\n                @Override\n                public void onSuccess(IMqttToken asyncActionToken) {\n                    Log.d(TAG, \"disconnected\");\n                }\n\n                @Override\n                public void onFailure(IMqttToken asyncActionToken,\n                                      Throwable exception) {\n\n\n                    Log.e(TAG, \"couldnt disconnect\", exception);\n                }\n            });\n        } catch (MqttException e) {\n            e.printStackTrace();\n        }\n\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/chooh/myapplication/Info.java	(date 1528786090000)
++++ app/src/main/java/com/example/chooh/myapplication/Info.java	(date 1528784753281)
+@@ -139,7 +139,8 @@
+                                     if (nameArray == null) {
+                                         object.put(sensorNames.get(i) + "-unknown-key" + (x + 1), event.values[x]);
+                                     } else {
+-                                        object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
++                                        String s = getIntent().getStringExtra("EXTRA_SESSION_ID");
++                                        object.put(s + sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
+                                     }
+                                 }
+                                 Log.i("shunqi", object.toString());
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    package=\"com.example.chooh.myapplication\">\n\n    <application\n        android:allowBackup=\"true\"\n        android:icon=\"@mipmap/infrared\"\n        android:label=\"@string/app_name\"\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/AppTheme\">\n        <service android:name=\"org.eclipse.paho.android.service.MqttService\" >\n        </service>\n        <activity android:name=\".Main\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\" />\n\n                <category android:name=\"android.intent.category.LAUNCHER\" />\n            </intent-filter>\n        </activity>\n        <activity android:name=\".Info\" />\n    </application>\n\n    <uses-permission android:name=\"android.permission.WAKE_LOCK\" />\n    <uses-permission android:name=\"android.permission.INTERNET\" />\n    <uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />\n    <uses-permission android:name=\"android.permission.READ_PHONE_STATE\" />\n    <uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>\n    <uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(date 1528786090000)
++++ app/src/main/AndroidManifest.xml	(date 1528786540681)
+@@ -1,30 +1,31 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="com.example.chooh.myapplication">
++    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
++        package="com.example.chooh.myapplication">
+ 
+-    <application
+-        android:allowBackup="true"
+-        android:icon="@mipmap/infrared"
+-        android:label="@string/app_name"
+-        android:roundIcon="@mipmap/ic_launcher_round"
+-        android:supportsRtl="true"
+-        android:theme="@style/AppTheme">
+-        <service android:name="org.eclipse.paho.android.service.MqttService" >
+-        </service>
+-        <activity android:name=".Main">
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+-        </activity>
+-        <activity android:name=".Info" />
+-    </application>
++        <uses-permission android:name="android.permission.WAKE_LOCK" />
++        <uses-permission android:name="android.permission.INTERNET" />
++        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++        <uses-permission android:name="android.permission.READ_PHONE_STATE" />
++        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
++        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
++
++        <application
++            android:allowBackup="true"
++            android:icon="@mipmap/infrared"
++            android:label="@string/app_name"
++            android:roundIcon="@mipmap/ic_launcher_round"
++            android:supportsRtl="true"
++            android:theme="@style/AppTheme">
++            <service android:name="org.eclipse.paho.android.service.MqttService"></service>
++
++            <activity android:name=".Configuration">
++                <intent-filter>
++                    <action android:name="android.intent.action.MAIN" />
++                    <category android:name="android.intent.category.LAUNCHER" />
++                </intent-filter>
++            </activity>
++            <activity android:name=".Info" />
++            <activity android:name=".Main" />
++        </application>
+ 
+-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+-    <uses-permission android:name="android.permission.INTERNET" />
+-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+-</manifest>
+\ No newline at end of file
++    </manifest>
+\ No newline at end of file
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>apply plugin: 'com.android.application'\n\nandroid {\n    compileSdkVersion 27\n    defaultConfig {\n        applicationId \"com.example.chooh.myapplication\"\n        minSdkVersion 24\n        targetSdkVersion 27\n        versionCode 1\n        versionName \"1.0\"\n        testInstrumentationRunner \"android.support.test.runner.AndroidJUnitRunner\"\n    }\n    buildTypes {\n        release {\n            minifyEnabled false\n            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'\n        }\n    }\n}\n\nrepositories{\n    maven {\n        url \"https://repo.eclipse.org/content/repositories/paho-snapshots/\"\n    }\n}\n\ndependencies {\n    // implementation fileTree(include: ['*.jar'], dir: 'libs')\n    implementation 'com.android.support:appcompat-v7:27.1.1'\n    implementation 'com.android.support.constraint:constraint-layout:1.1.0'\n    testImplementation 'junit:junit:4.12'\n    androidTestImplementation 'com.android.support.test:runner:1.0.2'\n    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'\n    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'\n    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'\n    implementation 'com.jakewharton.timber:timber:4.1.2'\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(date 1528786090000)
++++ app/build.gradle	(date 1528783492968)
+@@ -18,7 +18,7 @@
+     }
+ }
+ 
+-repositories{
++repositories {
+     maven {
+         url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
+     }
+@@ -28,6 +28,7 @@
+     // implementation fileTree(include: ['*.jar'], dir: 'libs')
+     implementation 'com.android.support:appcompat-v7:27.1.1'
+     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
++    implementation 'com.android.support:design:27.1.1'
+     testImplementation 'junit:junit:4.12'
+     androidTestImplementation 'com.android.support.test:runner:1.0.2'
+     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
