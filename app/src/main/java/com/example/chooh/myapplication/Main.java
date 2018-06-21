@@ -24,7 +24,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
     private SensorManager manager;
     private sensorAdapter adapoer;
     private String configName;
-    private String uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +32,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
 
         Bundle extras=getIntent().getExtras();
         configName=extras.getString("configName");
-        uri=extras.getString("uri");
 
         manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         List<Sensor> sensorList=manager.getSensorList(Sensor.TYPE_ALL);
@@ -85,7 +83,6 @@ public class Main extends AppCompatActivity implements View.OnClickListener{
         Intent intent=new Intent(this, Info.class);
         intent.putExtra("select",ia);
         intent.putExtra("configName",configName);
-        intent.putExtra("uri",uri);
         startActivity(intent);
 
     }

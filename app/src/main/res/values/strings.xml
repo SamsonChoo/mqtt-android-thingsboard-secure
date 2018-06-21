@@ -19,4 +19,13 @@
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
     <string name="select">Select</string>
+    <string name="title_activity_main_info">MainInfo</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="manufacturer">Manufacturer:</string>
+    <string name="model">Model:</string>
+    <string name="sdk">Android SKD:</string>
+    <string name="version">Android Version:</string>
+    <string name="imei">IMEI:</string>
+    <string name="serial">Serial Number:</string>
 </resources>
