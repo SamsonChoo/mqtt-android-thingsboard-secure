@@ -63,6 +63,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
+
     long LOCATION_REFRESH_TIME=333;
     float LOCATION_REFRESH_DISTANCE=1;
 
@@ -87,7 +88,6 @@ public class Info extends AppCompatActivity {
     private String id;
     private TelephonyManager telephonyManager;
     private Uri uri=null;
-    private InputStream inputStream=null;
 
     boolean bool = true;
 
@@ -142,13 +142,6 @@ public class Info extends AppCompatActivity {
             }
         }
 
-        if(uri!=null){
-            try{
-                inputStream=getContentResolver().openInputStream(uri);
-            }catch (IOException e){
-                e.printStackTrace();
-            }
-        }
 
         if(!server.equals("")&&!port.equals("")){
             serverUri ="ssl://" + server+ ":" + port;
@@ -364,13 +357,13 @@ public class Info extends AppCompatActivity {
     private SSLSocketFactory getSSLSocketFactory(Context context, String keystore, String password) throws
             MqttSecurityException {
         try {
-            InputStream keyStore = inputStream;
+            InputStream keyStore = getContentResolver().openInputStream(uri);
             KeyStore km = KeyStore.getInstance("BKS");
             km.load(keyStore, password.toCharArray());
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
             kmf.init(km, password.toCharArray());
 
-            InputStream trustStore = context.getResources().getAssets().open(keystore);
+            InputStream trustStore = getContentResolver().openInputStream(uri);
             KeyStore ts = KeyStore.getInstance("BKS");
             ts.load(trustStore, password.toCharArray());
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
