@@ -42,14 +42,16 @@ public class Tab1 extends Fragment{
 
         String manufacturerString= Build.MANUFACTURER;
         String modelString=Build.MODEL;
+        String sdkString=Build.VERSION.SDK_INT+"";
+        String versionString=Build.VERSION.RELEASE+"";
         String serialString=Build.SERIAL;
 
-//        manufacturer.setText("sth");
-//        model.setText(modelString);
-//        sdk.setText(Build.VERSION.SDK_INT);
-//        version.setText(Build.VERSION.RELEASE);
-//        imei.setText(id);
-//        serial.setText(serialString);
+        manufacturer.setText(manufacturerString);
+        model.setText(modelString);
+        sdk.setText(sdkString);
+        version.setText(versionString);
+        imei.setText(id);
+        serial.setText(serialString);
 
         return view;
     }

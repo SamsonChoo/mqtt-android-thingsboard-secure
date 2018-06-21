@@ -54,11 +54,11 @@ public class MainInfo extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        //mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        setupViewPager(mViewPager);
 
         TabLayout tabLayout=(TabLayout)findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -66,16 +66,11 @@ public class MainInfo extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new Tab1(), "ONE");
-        adapter.addFrag(new Tab1(), "TWO");
+        adapter.addFrag(new Tab1(), "phone Info");
+        adapter.addFrag(new Tab2(), "Message");
         adapter.addFrag(new Tab1(), "THREE");
         adapter.addFrag(new Tab1(), "FOUR");
         adapter.addFrag(new Tab1(), "FIVE");
-        adapter.addFrag(new Tab1(), "SIX");
-        adapter.addFrag(new Tab1(), "SEVEN");
-        adapter.addFrag(new Tab1(), "EIGHT");
-        adapter.addFrag(new Tab1(), "NINE");
-        adapter.addFrag(new Tab1(), "TEN");
         viewPager.setAdapter(adapter);
     }
 
