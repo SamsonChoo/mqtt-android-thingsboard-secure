@@ -84,6 +84,8 @@ public class Info extends AppCompatActivity {
     private static String channel;
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private MqttAndroidClient mqttAndroidClient;
+    private MqttAndroidClient mqttAndroidClient2;
+
 
     private String id;
     private TelephonyManager telephonyManager;
@@ -242,11 +244,13 @@ public class Info extends AppCompatActivity {
                             final String payload = object.toString();
 
                             try {
-                                MqttConnectOptions options = new MqttConnectOptions();
-                                options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
+                                mqttAndroidClient2 = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
 
-                                IMqttToken token = mqttAndroidClient.connect(options);
-                                token.setActionCallback(new IMqttActionListener() {
+                                MqttConnectOptions options2 = new MqttConnectOptions();
+                                options2.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
+
+                                IMqttToken token2 = mqttAndroidClient2.connect(options2);
+                                token2.setActionCallback(new IMqttActionListener() {
                                     @Override
                                     public void onSuccess(IMqttToken asyncActionToken) {
                                         // We are connected
@@ -256,7 +260,7 @@ public class Info extends AppCompatActivity {
                                             byte[] encodedPayload = new byte[0];
                                             encodedPayload = payload.getBytes("UTF-8");
                                             MqttMessage message = new MqttMessage(encodedPayload);
-                                            mqttAndroidClient.publish(topic, message);
+                                            mqttAndroidClient2.publish(topic, message);
                                             bool = true;
                                         } catch (MqttException | UnsupportedEncodingException e) {
                                             e.printStackTrace();
@@ -406,7 +410,6 @@ public class Info extends AppCompatActivity {
                         encodedPayload = msg.getBytes("UTF-8");
                         message = new MqttMessage(encodedPayload);
                         mqttAndroidClient.publish(topic, message);
-                        subscribeToTopic();
                     } catch (MqttException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
