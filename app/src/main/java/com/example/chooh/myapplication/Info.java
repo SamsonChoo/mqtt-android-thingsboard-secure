@@ -421,6 +421,9 @@ public class Info extends AppCompatActivity {
                     } catch (MqttException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
+
+                    TextView message_received = (TextView)findViewById(R.id.message_received);
+                    message_received.setText(new String(message.getPayload()));
                 }
             });
 
