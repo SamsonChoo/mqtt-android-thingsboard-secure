@@ -19,7 +19,7 @@
         android:theme="@style/MyMaterialTheme">
         <service android:name="org.eclipse.paho.android.service.MqttService" />
 
-        <activity android:name=".MainInfo">
+        <activity android:name=".Configuration">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,9 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".Info" />
-        <activity android:name=".Sensors" />
         <activity
-            android:name=".Configuration" />
+            android:name=".MainInfo" />
     </application>
 
 </manifest>

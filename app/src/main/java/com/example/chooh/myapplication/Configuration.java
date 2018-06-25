@@ -272,7 +272,7 @@ public class Configuration extends AppCompatActivity {
         sel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(getApplicationContext(),Main.class);
+                Intent intent=new Intent(getApplicationContext(),MainInfo.class);
                 intent.putExtra("configName",configSpinner.getSelectedItem().toString());
                 startActivity(intent);
             }
