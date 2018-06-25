@@ -13,10 +13,18 @@
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:textColor="@color/black"/>
+
     <TextView
         android:id="@+id/sent_info"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"/>
+        android:layout_height="423dp"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/message_received"
+        android:layout_width="match_parent"
+        android:layout_height="117dp"
+        android:text="TextView" />
+
 
 </LinearLayout>
