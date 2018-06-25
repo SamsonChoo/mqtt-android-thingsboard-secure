@@ -35,16 +35,18 @@ public class Tab4 extends Fragment{
         if(externalMemoryAvailable()){
             File path= Environment.getExternalStorageDirectory();
             StatFs stat=new StatFs(path.getPath());
+
+            File paht2=Environment.getDataDirectory();
+            StatFs stat2=new StatFs(paht2.getPath());
+
             long blockSize=stat.getBlockSizeLong();
             long available=stat.getAvailableBlocksLong();
             long total=stat.getBlockCountLong();
 
             int used=(int)(100*(total-available)/total);
-            Log.i("shunqi",used+"");
-            Log.i("shunqi","log here");
             memory.setProgress(used);
 
-            String text=Math.round(available*blockSize/Math.pow(1024,3))
+            String text=Math.round((total-available)*blockSize/Math.pow(1024,3))
                     +"GB / "
                     +Math.round(total*blockSize/Math.pow(1024,3))
                     +"GB";

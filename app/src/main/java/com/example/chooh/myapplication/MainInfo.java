@@ -44,10 +44,14 @@ public class MainInfo extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private String configName="";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_info);
+
+        configName=getIntent().getStringExtra("configName");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -69,8 +73,10 @@ public class MainInfo extends AppCompatActivity {
         adapter.addFrag(new Tab1(), "Phone Info");
         adapter.addFrag(new Tab2(), "Message");
         adapter.addFrag(new Tab3(), "Battery");
-        adapter.addFrag(new Tab4(), "Memory");
-        adapter.addFrag(new Tab4(), "Sensors");
+        adapter.addFrag(new Tab4(), "Storage");
+        Sensors sensors=new Sensors();
+        sensors.setConfigName(configName);
+        adapter.addFrag(sensors, "Sensors");
         viewPager.setAdapter(adapter);
     }
 
@@ -127,5 +133,9 @@ public class MainInfo extends AppCompatActivity {
         public CharSequence getPageTitle(int position){
             return mFragmentTitleList.get(position);
         }
+    }
+
+    public String getConfigName(){
+        return configName;
     }
 }

@@ -26,7 +26,7 @@ public class Sensors extends Fragment{
 
     private SensorManager manager;
     private sensorAdapter adapoer;
-    private String configName;
+    private String configName="";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,11 +37,8 @@ public class Sensors extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.memory, container, false);
+        View view = inflater.inflate(R.layout.activity_main, container, false);
         final Context context=getContext();
-
-        //Bundle extras=getIntent().getExtras();
-        //configName=extras.getString("configName");
 
         manager=(SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
         List<Sensor> sensorList=manager.getSensorList(Sensor.TYPE_ALL);
@@ -59,10 +56,15 @@ public class Sensors extends Fragment{
             public void onClick(View v) {
                 adapoer.reset();
                 ///////////recreate();
+                getActivity().recreate();
             }
         });
 
         return view;
+    }
+
+    public void setConfigName(String name){
+        configName=name;
     }
 
     View.OnClickListener listener=new View.OnClickListener() {
