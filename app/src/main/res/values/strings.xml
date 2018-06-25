@@ -29,5 +29,5 @@
     <string name="imei">IMEI:</string>
     <string name="serial">Serial Number:</string>
     <string name="hint">Type in the message you want to send</string>
-    <string name="memory">Free Space</string>
+    <string name="memory">Storage Usage</string>
 </resources>
