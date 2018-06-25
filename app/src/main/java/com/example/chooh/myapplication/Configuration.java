@@ -1,5 +1,6 @@
 package com.example.chooh.myapplication;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration extends AppCompatActivity {
+    private static final int REQUEST_LOCATION=1;
     private final String configs="config";
     private EditText name;
     private EditText server;
@@ -53,6 +56,9 @@ public class Configuration extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
+
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_PHONE_STATE},
+                REQUEST_LOCATION);
 
         final RelativeLayout first_part=(RelativeLayout)findViewById(R.id.first_part);
         final RelativeLayout second_part=(RelativeLayout)findViewById(R.id.second_part);
