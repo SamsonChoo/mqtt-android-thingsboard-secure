@@ -48,6 +48,7 @@ public class Configuration extends AppCompatActivity {
     private TextView keyFile;
     private JSONArray array=null;
     private Uri uri=null;
+    private String fileName="";
 
     private static final int READ_REQUEST_CODE=42;
 
@@ -232,6 +233,7 @@ public class Configuration extends AppCompatActivity {
                         objectSave.put("pwd",pwdSave);
                         objectSave.put("channel",channelSave);
                         objectSave.put("uri",uri.toString());
+                        objectSave.put("fileName",fileName);
                         array.put(objectSave);
 
                         FileOutputStream outputStream;
@@ -348,6 +350,7 @@ public class Configuration extends AppCompatActivity {
                 if(!displayName.equals("")){
                     keyFile.setText(displayName);
                     keyFile.setVisibility(View.VISIBLE);
+                    fileName=displayName;
                 }
             }
         }finally {

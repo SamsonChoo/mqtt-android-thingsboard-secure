@@ -28,4 +28,5 @@
     <string name="version">Android Version:</string>
     <string name="imei">IMEI:</string>
     <string name="serial">Serial Number:</string>
+    <string name="hint">Type in the message you want to send</string>
 </resources>

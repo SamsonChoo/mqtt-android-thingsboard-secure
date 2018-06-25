@@ -63,7 +63,6 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
-
     long LOCATION_REFRESH_TIME=333;
     float LOCATION_REFRESH_DISTANCE=1;
 
@@ -84,12 +83,11 @@ public class Info extends AppCompatActivity {
     private static String channel;
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private MqttAndroidClient mqttAndroidClient;
-    private MqttAndroidClient mqttAndroidClient2;
-
 
     private String id;
     private TelephonyManager telephonyManager;
     private Uri uri=null;
+    private InputStream inputStream=null;
 
     boolean bool = true;
 
@@ -136,6 +134,7 @@ public class Info extends AppCompatActivity {
                         certPwd =o.getString("pwd");
                         channel=o.getString("channel");
                         uri=Uri.parse(o.getString("uri"));
+                        certFile=o.getString("fileName");
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
@@ -143,7 +142,15 @@ public class Info extends AppCompatActivity {
 
             }
         }
+        Log.i("shunqi",uri.toString());
 
+        if(uri!=null){
+            try{
+                inputStream=getContentResolver().openInputStream(uri);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
 
         if(!server.equals("")&&!port.equals("")){
             serverUri ="ssl://" + server+ ":" + port;
@@ -202,7 +209,6 @@ public class Info extends AppCompatActivity {
             while ((st=br.readLine())!=null){
                 content+=st;
             }
-            System.out.println(content);
             names=new JSONObject(content);
             Log.i("shunqi",names.toString());
         }catch (Exception e){
@@ -234,7 +240,7 @@ public class Info extends AppCompatActivity {
                                         object.put(fid+"-"+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                     }
                                 }
-                                Log.i("shunqi", object.toString());
+                                //Log.i("shunqi", object.toString());
                                 textView.setText(object.toString());
                                 time_map.put(0, System.currentTimeMillis());
                             } catch (JSONException e) {
@@ -244,13 +250,11 @@ public class Info extends AppCompatActivity {
                             final String payload = object.toString();
 
                             try {
-                                mqttAndroidClient2 = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
+                                MqttConnectOptions options = new MqttConnectOptions();
+                                options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
 
-                                MqttConnectOptions options2 = new MqttConnectOptions();
-                                options2.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
-
-                                IMqttToken token2 = mqttAndroidClient2.connect(options2);
-                                token2.setActionCallback(new IMqttActionListener() {
+                                IMqttToken token = mqttAndroidClient.connect(options);
+                                token.setActionCallback(new IMqttActionListener() {
                                     @Override
                                     public void onSuccess(IMqttToken asyncActionToken) {
                                         // We are connected
@@ -260,7 +264,7 @@ public class Info extends AppCompatActivity {
                                             byte[] encodedPayload = new byte[0];
                                             encodedPayload = payload.getBytes("UTF-8");
                                             MqttMessage message = new MqttMessage(encodedPayload);
-                                            mqttAndroidClient2.publish(topic, message);
+                                            mqttAndroidClient.publish(topic, message);
                                             bool = true;
                                         } catch (MqttException | UnsupportedEncodingException e) {
                                             e.printStackTrace();
@@ -362,12 +366,15 @@ public class Info extends AppCompatActivity {
             MqttSecurityException {
         try {
             InputStream keyStore = getContentResolver().openInputStream(uri);
+            System.out.println("asdf"+keyStore);
+            //InputStream keyStore =context.getResources().getAssets().open(keystore);
             KeyStore km = KeyStore.getInstance("BKS");
             km.load(keyStore, password.toCharArray());
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
             kmf.init(km, password.toCharArray());
 
             InputStream trustStore = getContentResolver().openInputStream(uri);
+            System.out.println("asdf"+trustStore);
             KeyStore ts = KeyStore.getInstance("BKS");
             ts.load(trustStore, password.toCharArray());
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
@@ -410,6 +417,7 @@ public class Info extends AppCompatActivity {
                         encodedPayload = msg.getBytes("UTF-8");
                         message = new MqttMessage(encodedPayload);
                         mqttAndroidClient.publish(topic, message);
+                        subscribeToTopic();
                     } catch (MqttException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
