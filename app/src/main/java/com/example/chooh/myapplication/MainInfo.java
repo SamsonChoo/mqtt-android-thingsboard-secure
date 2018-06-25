@@ -66,11 +66,11 @@ public class MainInfo extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new Tab1(), "phone Info");
+        adapter.addFrag(new Tab1(), "Phone Info");
         adapter.addFrag(new Tab2(), "Message");
-        adapter.addFrag(new Tab1(), "THREE");
-        adapter.addFrag(new Tab1(), "FOUR");
-        adapter.addFrag(new Tab1(), "FIVE");
+        adapter.addFrag(new Tab3(), "Battery");
+        adapter.addFrag(new Tab4(), "Memory");
+        adapter.addFrag(new Tab4(), "Sensors");
         viewPager.setAdapter(adapter);
     }
 

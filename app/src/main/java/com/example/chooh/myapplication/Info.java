@@ -134,6 +134,7 @@ public class Info extends AppCompatActivity {
                         certPwd =o.getString("pwd");
                         channel=o.getString("channel");
                         uri=Uri.parse(o.getString("uri"));
+                        certFile=o.getString("fileName");
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
@@ -141,6 +142,7 @@ public class Info extends AppCompatActivity {
 
             }
         }
+        Log.i("shunqi",uri.toString());
 
         if(uri!=null){
             try{
@@ -207,7 +209,6 @@ public class Info extends AppCompatActivity {
             while ((st=br.readLine())!=null){
                 content+=st;
             }
-            System.out.println(content);
             names=new JSONObject(content);
             Log.i("shunqi",names.toString());
         }catch (Exception e){
@@ -239,7 +240,7 @@ public class Info extends AppCompatActivity {
                                         object.put(fid+"-"+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                     }
                                 }
-                                Log.i("shunqi", object.toString());
+                                //Log.i("shunqi", object.toString());
                                 textView.setText(object.toString());
                                 time_map.put(0, System.currentTimeMillis());
                             } catch (JSONException e) {
@@ -364,13 +365,16 @@ public class Info extends AppCompatActivity {
     private SSLSocketFactory getSSLSocketFactory(Context context, String keystore, String password) throws
             MqttSecurityException {
         try {
-            InputStream keyStore = inputStream;
+            InputStream keyStore = getContentResolver().openInputStream(uri);
+            System.out.println("asdf"+keyStore);
+            //InputStream keyStore =context.getResources().getAssets().open(keystore);
             KeyStore km = KeyStore.getInstance("BKS");
             km.load(keyStore, password.toCharArray());
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
             kmf.init(km, password.toCharArray());
 
-            InputStream trustStore = context.getResources().getAssets().open(keystore);
+            InputStream trustStore = getContentResolver().openInputStream(uri);
+            System.out.println("asdf"+trustStore);
             KeyStore ts = KeyStore.getInstance("BKS");
             ts.load(trustStore, password.toCharArray());
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
