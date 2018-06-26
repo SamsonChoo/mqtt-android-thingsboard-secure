@@ -236,9 +236,9 @@ public class Info extends AppCompatActivity {
                                 for (int x = 0; x < event.values.length; x++) {
 
                                     if (nameArray == null) {
-                                        object.put(fid+"-"+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
+                                        object.put(fid+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
                                     } else {
-                                        object.put(fid+"-"+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
+                                        object.put(fid+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                     }
                                 }
                                 //Log.i("shunqi", object.toString());
