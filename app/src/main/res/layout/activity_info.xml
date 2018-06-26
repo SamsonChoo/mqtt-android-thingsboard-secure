@@ -24,6 +24,7 @@
         android:id="@+id/message_received"
         android:layout_width="match_parent"
         android:layout_height="117dp"
+        android:textSize="30sp"
         android:text="Message" />
 
 

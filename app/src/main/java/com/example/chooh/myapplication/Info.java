@@ -411,6 +411,8 @@ public class Info extends AppCompatActivity {
                     String[] parts = topic.split("/");
                     String requestId = parts[5];
                     try {
+                        TextView message_received = (TextView)findViewById(R.id.message_received);
+                        message_received.setText(new String(message.getPayload()));
                         String msg = "{\"meow\":\"meow\"}";
                         topic = "v1/devices/me/rpc/response/" + requestId;
                         byte[] encodedPayload = new byte[0];
@@ -421,9 +423,6 @@ public class Info extends AppCompatActivity {
                     } catch (MqttException | UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-
-                    TextView message_received = (TextView)findViewById(R.id.message_received);
-                    message_received.setText(new String(message.getPayload()));
                 }
             });
 
