@@ -168,7 +168,8 @@ public class Info extends AppCompatActivity {
         if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)==PackageManager.PERMISSION_GRANTED){
             id=telephonyManager.getDeviceId();
         }
-        final String fid=id;
+        //final String fid = id
+        final String fid="";
 
         for(int i:ia){
             Sensor sensor=sensors.get(i);
@@ -235,9 +236,9 @@ public class Info extends AppCompatActivity {
                                 for (int x = 0; x < event.values.length; x++) {
 
                                     if (nameArray == null) {
-                                        object.put(fid+"-"+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
+                                        object.put(fid+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
                                     } else {
-                                        object.put(fid+"-"+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
+                                        object.put(fid+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                     }
                                 }
                                 //Log.i("shunqi", object.toString());
@@ -329,8 +330,8 @@ public class Info extends AppCompatActivity {
             Location location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if(location!=null){
                 try{
-                    object.put(fid+"-"+"Latitude",location.getLatitude());
-                    object.put(fid+"-"+"Longitude",location.getLongitude());
+                    object.put(fid+"Latitude",location.getLatitude());
+                    object.put(fid+"Longitude",location.getLongitude());
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
@@ -411,6 +412,8 @@ public class Info extends AppCompatActivity {
                     String[] parts = topic.split("/");
                     String requestId = parts[5];
                     try {
+                        TextView message_received = (TextView)findViewById(R.id.message_received);
+                        message_received.setText(new String(message.getPayload()));
                         String msg = "{\"meow\":\"meow\"}";
                         topic = "v1/devices/me/rpc/response/" + requestId;
                         byte[] encodedPayload = new byte[0];
