@@ -168,7 +168,8 @@ public class Info extends AppCompatActivity {
         if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)==PackageManager.PERMISSION_GRANTED){
             id=telephonyManager.getDeviceId();
         }
-        final String fid=id;
+        //final String fid = id
+        final String fid=null;
 
         for(int i:ia){
             Sensor sensor=sensors.get(i);
