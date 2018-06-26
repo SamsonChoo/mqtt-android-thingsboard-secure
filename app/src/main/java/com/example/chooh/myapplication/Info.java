@@ -330,8 +330,8 @@ public class Info extends AppCompatActivity {
             Location location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if(location!=null){
                 try{
-                    object.put(fid+"-"+"Latitude",location.getLatitude());
-                    object.put(fid+"-"+"Longitude",location.getLongitude());
+                    object.put(fid+"Latitude",location.getLatitude());
+                    object.put(fid+"Longitude",location.getLongitude());
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
