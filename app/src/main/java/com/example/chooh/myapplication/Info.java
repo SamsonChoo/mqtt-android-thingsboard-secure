@@ -169,7 +169,7 @@ public class Info extends AppCompatActivity {
             id=telephonyManager.getDeviceId();
         }
         //final String fid = id
-        final String fid=null;
+        final String fid="";
 
         for(int i:ia){
             Sensor sensor=sensors.get(i);
