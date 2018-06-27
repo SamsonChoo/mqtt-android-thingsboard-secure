@@ -8,6 +8,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -91,6 +93,9 @@ public class Info extends AppCompatActivity {
 
     boolean bool = true;
 
+    private static final int CAMERA_REQUEST=5;
+    private boolean flashLightStatus = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +103,8 @@ public class Info extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_LOCATION);
+        ActivityCompat.requestPermissions(Info.this,
+                new String[] {Manifest.permission.CAMERA}, CAMERA_REQUEST);
 
         Bundle extras=getIntent().getExtras();
 
@@ -150,6 +157,31 @@ public class Info extends AppCompatActivity {
 
         connection=new Connection(serverUri,clientId,certFile,certPwd,uri,getApplicationContext());
         connection.setup();
+
+        try{
+            mqttAndroidClient = new MqttAndroidClient(this, serverUri, clientId);
+
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setSocketFactory(getSSLSocketFactory(this, certFile, certPwd));
+
+            IMqttToken token = mqttAndroidClient.connect(options);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    //we are connected! subscribe for rpc
+                    subscribeToTopic();
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.d(TAG, "Failure " + exception.toString());
+
+                }
+            });
+        }catch (MqttException e){
+            e.printStackTrace();
+        }
 
         final TextView textView=(TextView)findViewById(R.id.sent_info);
         textView.setMovementMethod(new ScrollingMovementMethod());
@@ -414,6 +446,10 @@ public class Info extends AppCompatActivity {
                     String[] parts = topic.split("/");
                     String requestId = parts[5];
                     try {
+                        if (flashLightStatus)
+                            flashLightOff();
+                        else
+                            flashLightOn();
                         TextView message_received = (TextView)findViewById(R.id.message_received);
                         message_received.setText(new String(message.getPayload()));
                         String msg = "{\"meow\":\"meow\"}";
@@ -456,5 +492,27 @@ public class Info extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    private void flashLightOn() {
+        CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+
+        try {
+            String cameraId = cameraManager.getCameraIdList()[0];
+            cameraManager.setTorchMode(cameraId, true);
+            flashLightStatus = true;
+        } catch (CameraAccessException e) {
+        }
+    }
+
+    private void flashLightOff() {
+        CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+
+        try {
+            String cameraId = cameraManager.getCameraIdList()[0];
+            cameraManager.setTorchMode(cameraId, false);
+            flashLightStatus = false;
+        } catch (CameraAccessException e) {
+        }
     }
 }
