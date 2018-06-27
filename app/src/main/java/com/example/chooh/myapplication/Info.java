@@ -470,15 +470,21 @@ public class Info extends AppCompatActivity {
                     String payload = new String(message.getPayload());
                     System.out.println("Message: " + topic + " : " + payload);
                     TextView message_received = (TextView)findViewById(R.id.message_received);
-                    if (flashLightStatus)
-                        flashLightOff();
-                    else
-                        flashLightOn();
                     String splitted[] = payload.split("\"");
                     String Sensor = splitted[3];
                     String command = splitted[7];
                     if(Sensor.equals("Message"))
                         message_received.setText(command);
+                    else if(Sensor.equalsIgnoreCase("Light")||Sensor.equalsIgnoreCase("Lights"))
+                            if(command.equalsIgnoreCase("on"))
+                                flashLightOn();
+                            if(command.equalsIgnoreCase("off"))
+                                flashLightOff();
+                            if(command.equalsIgnoreCase("switch"))
+                                if (flashLightStatus)
+                                    flashLightOff();
+                                else
+                                    flashLightOn();
                     subscribeToTopic();
                 }
             });
