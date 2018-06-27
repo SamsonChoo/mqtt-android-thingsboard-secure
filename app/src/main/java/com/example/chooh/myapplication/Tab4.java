@@ -8,15 +8,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.File;
 import java.text.DecimalFormat;
 
 public class Tab4 extends Fragment{
+    private String text="";
+    private Connection connection;
+
     public Tab4(){}
 
     @Override
@@ -31,6 +37,7 @@ public class Tab4 extends Fragment{
 
         ProgressBar memory=(ProgressBar)view.findViewById(R.id.memory);
         TextView memoryText=(TextView)view.findViewById(R.id.memoryText);
+        Button send=(Button)view.findViewById(R.id.sendMemory);
 
         if(externalMemoryAvailable()){
             File path= Environment.getExternalStorageDirectory();
@@ -46,14 +53,33 @@ public class Tab4 extends Fragment{
             int used=(int)(100*(total-available)/total);
             memory.setProgress(used);
 
-            String text=Math.round((total-available)*blockSize/Math.pow(1024,3))
+            text=Math.round((total-available)*blockSize/Math.pow(1024,3))
                     +"GB / "
                     +Math.round(total*blockSize/Math.pow(1024,3))
                     +"GB";
             memoryText.setText(text);
         }
 
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(text!=""){
+                    JSONObject object=new JSONObject();
+                    try{
+                        object.put("storage",text);
+                    }catch (JSONException e){
+                        e.printStackTrace();
+                    }
+                    connection.send(object.toString());
+                }
+            }
+        });
+
         return view;
+    }
+
+    public void setConnection(Connection con){
+        connection=con;
     }
 
     public static boolean externalMemoryAvailable() {

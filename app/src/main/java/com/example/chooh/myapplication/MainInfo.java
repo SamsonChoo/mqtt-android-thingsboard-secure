@@ -153,7 +153,9 @@ public class MainInfo extends AppCompatActivity {
         tab3.setConnection(connection);
         adapter.addFrag(tab3, "Battery");
 
-        adapter.addFrag(new Tab4(), "Storage");
+        Tab4 tab4=new Tab4();
+        tab4.setConnection(connection);
+        adapter.addFrag(tab4, "Storage");
         viewPager.setAdapter(adapter);
     }
 
