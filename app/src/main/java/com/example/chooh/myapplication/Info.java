@@ -15,6 +15,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
@@ -34,7 +35,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 
@@ -57,6 +57,7 @@ import java.security.cert.CertificateException;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -68,11 +69,16 @@ public class Info extends AppCompatActivity {
     private static final int REQUEST_LOCATION=1;
     long LOCATION_REFRESH_TIME=333;
     float LOCATION_REFRESH_DISTANCE=1;
+    Location location=null;
 
     private SensorEventListener listener;
     private SensorManager manager;
-    private final Map<Integer,Long> time_map=new HashMap<>();
+    final ArrayList<Sensor> selected=new ArrayList<>();
+    final ArrayList<String> sensorNames=new ArrayList<>();
+    ArrayList<Sensor> sensors=new ArrayList<>();
+    final JSONObject object=new JSONObject();
 
+    private final Map<Integer,Long> time_map=new HashMap<>();
     private final int interval=200;
 
 
@@ -188,9 +194,7 @@ public class Info extends AppCompatActivity {
         textView.setMovementMethod(new ScrollingMovementMethod());
 
         manager=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
-        final ArrayList<Sensor> sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));
-        final ArrayList<Sensor> selected=new ArrayList<>();
-        final ArrayList<String> sensorNames=new ArrayList<>();
+        sensors=new ArrayList<>(manager.getSensorList(Sensor.TYPE_ALL));
 
         telephonyManager=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         if(checkSelfPermission(Manifest.permission.READ_PHONE_STATE)==PackageManager.PERMISSION_GRANTED){
@@ -249,40 +253,33 @@ public class Info extends AppCompatActivity {
         }
 
         final JSONObject final_names=names;
-        final JSONObject object=new JSONObject();
         listener=new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                time_map.put(1, System.currentTimeMillis());
-                if ((time_map.get(1) - time_map.get(0) > interval) && (bool==true) ){
-                    //bool = false;
-                    for (int i = 0; i < ia.length; i++) {
-                        if (event.sensor.equals(selected.get(i))) {
-                            JSONArray nameArray = null;
-                            try {
-                                nameArray = (JSONArray) final_names.get(sensorNames.get(i));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            try {
-                                for (int x = 0; x < event.values.length; x++) {
-
-                                    if (nameArray == null) {
-                                        object.put(fid+event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
-                                    } else {
-                                        object.put(fid+sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
-                                    }
+                for (int i = 0; i < selected.size(); i++) {
+                    if (event.sensor.equals(selected.get(i))) {
+                        JSONArray nameArray = null;
+                        try {
+                            nameArray = (JSONArray) final_names.get(sensorNames.get(i));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            for (int x = 0; x < event.values.length; x++) {
+                                if (nameArray == null) {
+                                    object.put(event.sensor.getName() + "-unknown-key" + (x + 1), event.values[x]);
+                                } else {
+                                    object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                 }
-                                //Log.i("shunqi", object.toString());
-                                textView.setText(object.toString());
-                                time_map.put(0, System.currentTimeMillis());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
                             }
+                            //Log.i("shunqi", object.toString());
+                            //textView.setText(object.toString());
+                            time_map.put(0, System.currentTimeMillis());
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
-                            final String payload = object.toString();
-
-                            connection.send(payload);
+                            //connection.send(payload);
 
 //                            try {
 //                                MqttConnectOptions options = new MqttConnectOptions();
@@ -317,7 +314,6 @@ public class Info extends AppCompatActivity {
 //                            } catch (MqttException e) {
 //                                e.printStackTrace();
 //                            }
-                        }
                     }
                 }
             }
@@ -325,20 +321,33 @@ public class Info extends AppCompatActivity {
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
 
-        time_map.put(0,System.currentTimeMillis());
-        time_map.put(1,new Long(1));
         for(Sensor s:selected){
             manager.registerListener(listener,s,1000000);
         }
 
-        //No data
+        final Handler handler=new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(object.toString());
+                connection.send(object.toString());
+                handler.postDelayed(this,200);
+            }
+        },200);
 
         final TextView locationText=(TextView)findViewById(R.id.location);
 
         final LocationListener locationListener=new LocationListener() {
             @Override
-            public void onLocationChanged(Location location) {
+            public void onLocationChanged(Location loc) {
+                location=loc;
                 if(location!=null){
+                    try{
+                        object.put("Latitude",location.getLatitude());
+                        object.put("Longitude",location.getLongitude());
+                    }catch (JSONException e){
+                        e.printStackTrace();
+                    }
                     String text="Latitude: "+location.getLatitude()
                             +"\nLongitude: "+location.getLongitude();
                     locationText.setText(text);
@@ -361,11 +370,11 @@ public class Info extends AppCompatActivity {
 
         LocationManager mLocationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
         if(checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
-            Location location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            location=mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if(location!=null){
                 try{
-                    object.put(fid+"Latitude",location.getLatitude());
-                    object.put(fid+"Longitude",location.getLongitude());
+                    object.put("Latitude",location.getLatitude());
+                    object.put("Longitude",location.getLongitude());
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
@@ -469,22 +478,79 @@ public class Info extends AppCompatActivity {
                     // message Arrived!
                     String payload = new String(message.getPayload());
                     System.out.println("Message: " + topic + " : " + payload);
+
+                    JSONObject receive=new JSONObject(payload);
+
                     TextView message_received = (TextView)findViewById(R.id.message_received);
-                    String splitted[] = payload.split("\"");
-                    String Sensor = splitted[3];
-                    String command = splitted[7];
-                    if(Sensor.equals("Message"))
+                    String Sensor = receive.getString("method");
+                    String command = receive.getString("params");
+                    if(Sensor.equals("Message")){
                         message_received.setText(command);
-                    else if(Sensor.equalsIgnoreCase("Light")||Sensor.equalsIgnoreCase("Lights"))
-                            if(command.equalsIgnoreCase("on"))
-                                flashLightOn();
-                            if(command.equalsIgnoreCase("off"))
+                    }
+                    else if(Sensor.equalsIgnoreCase("Light")||Sensor.equalsIgnoreCase("Lights")){
+                        if(command.equalsIgnoreCase("on"))
+                            flashLightOn();
+                        if(command.equalsIgnoreCase("off"))
+                            flashLightOff();
+                        if(command.equalsIgnoreCase("switch"))
+                            if (flashLightStatus)
                                 flashLightOff();
-                            if(command.equalsIgnoreCase("switch"))
-                                if (flashLightStatus)
-                                    flashLightOff();
-                                else
-                                    flashLightOn();
+                            else
+                                flashLightOn();
+                    }
+                    else {
+                        String sensorName=Sensor.substring(0,1).toUpperCase()
+                                +Sensor.substring(1,Sensor.length()).toLowerCase();
+
+
+                        Log.i("shunqi-edit",sensorName);
+                        if(sensorNames.contains(sensorName)){
+                            if(command.equalsIgnoreCase("off")){
+                                //remove sensor from list
+                                Sensor tmpSensor=null;
+                                for(Sensor s:sensors){
+                                    if(sensorAdapter.sensorTypeToString(s.getType()).equals(sensorName)){
+                                        tmpSensor=s;
+                                        break;
+                                    }
+                                }
+                                selected.remove(tmpSensor);
+                                sensorNames.remove(sensorName);
+                                manager.unregisterListener(listener);
+                                for(Sensor s:selected){
+                                    manager.registerListener(listener,s,1000000);
+                                }
+
+                                Iterator<String> ki=object.keys();
+                                ArrayList<String> kl=new ArrayList<>();
+                                while (ki.hasNext()){
+                                    kl.add(ki.next());
+                                }
+                                for(String key:kl){
+                                    object.remove(key);
+                                }
+
+                                object.put("Latitude",location.getLatitude());
+                                object.put("Longitude",location.getLongitude());
+                            }
+                        }else{
+                            if(command.equalsIgnoreCase("on")){
+                                //add sensor to list
+                                Sensor tmpSensor=null;
+                                for(Sensor s:sensors){
+                                    if(sensorAdapter.sensorTypeToString(s.getType()).equals(sensorName)){
+                                        tmpSensor=s;
+                                        break;
+                                    }
+                                }
+                                selected.add(tmpSensor);
+                                sensorNames.add(sensorName);
+                                manager.registerListener(listener,tmpSensor,1000000);
+                            }
+                        }
+                    }
+
+
                     subscribeToTopic();
                 }
             });
