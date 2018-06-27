@@ -99,6 +99,7 @@ public class Sensors extends Fragment{
             Intent intent=new Intent(context, Info.class);
             intent.putExtra("select",ia);
             intent.putExtra("configName",configName);
+            Log.i("shunqi",configName);
             startActivity(intent);
         }
     };
