@@ -146,7 +146,9 @@ public class MainInfo extends AppCompatActivity {
         sensors.setConfigName(configName);
         adapter.addFrag(sensors, "Sensors");
 
-        adapter.addFrag(new Tab1(), "Phone Info");
+        Tab1 tab1 = new Tab1();
+        tab1.setConnection(connection);
+        adapter.addFrag(tab1, "Phone Info");
         adapter.addFrag(new Tab2(), "Message");
 
         Tab3 tab3=new Tab3();
