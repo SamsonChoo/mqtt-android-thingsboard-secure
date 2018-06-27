@@ -55,6 +55,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -439,29 +440,46 @@ public class Info extends AppCompatActivity {
 
             // THIS DOES NOT WORK!
             mqttAndroidClient.subscribe("v1/devices/me/rpc/request/+", 0, new IMqttMessageListener() {
+//                @Override
+//                public void messageArrived(String topic, MqttMessage message) throws Exception {
+//                    // message Arrived!
+//                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
+//                    String[] parts = topic.split("/");
+//                    String requestId = parts[5];
+//                    try {
+//                        if (flashLightStatus)
+//                            flashLightOff();
+//                        else
+//                            flashLightOn();
+//                        TextView message_received = (TextView)findViewById(R.id.message_received);
+//                        message_received.setText(new String(message.getPayload()));
+//                        String msg = "{\"meow\":\"meow\"}";
+//                        topic = "v1/devices/me/rpc/response/" + requestId;
+//                        byte[] encodedPayload = new byte[0];
+//                        encodedPayload = msg.getBytes("UTF-8");
+//                        message = new MqttMessage(encodedPayload);
+//                        mqttAndroidClient.publish(topic, message);
+//                        subscribeToTopic();
+//                    } catch (MqttException | UnsupportedEncodingException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // message Arrived!
-                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
-                    String[] parts = topic.split("/");
-                    String requestId = parts[5];
-                    try {
-                        if (flashLightStatus)
-                            flashLightOff();
-                        else
-                            flashLightOn();
-                        TextView message_received = (TextView)findViewById(R.id.message_received);
-                        message_received.setText(new String(message.getPayload()));
-                        String msg = "{\"meow\":\"meow\"}";
-                        topic = "v1/devices/me/rpc/response/" + requestId;
-                        byte[] encodedPayload = new byte[0];
-                        encodedPayload = msg.getBytes("UTF-8");
-                        message = new MqttMessage(encodedPayload);
-                        mqttAndroidClient.publish(topic, message);
-                        subscribeToTopic();
-                    } catch (MqttException | UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
+                    String payload = new String(message.getPayload());
+                    System.out.println("Message: " + topic + " : " + payload);
+                    TextView message_received = (TextView)findViewById(R.id.message_received);
+                    if (flashLightStatus)
+                        flashLightOff();
+                    else
+                        flashLightOn();
+                    String splitted[] = payload.split("\"");
+                    String Sensor = splitted[3];
+                    String command = splitted[7];
+                    if(Sensor.equals("Message"))
+                        message_received.setText(command);
+                    subscribeToTopic();
                 }
             });
 
