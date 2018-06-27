@@ -52,6 +52,9 @@ public class Configuration extends AppCompatActivity {
 
     private static final int READ_REQUEST_CODE=42;
 
+    private static final int CAMERA_REQUEST=5;
+    private boolean flashLightStatus = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +62,9 @@ public class Configuration extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_PHONE_STATE},
                 REQUEST_LOCATION);
+        ActivityCompat.requestPermissions(Configuration.this,
+                new String[] {Manifest.permission.CAMERA}, CAMERA_REQUEST);
+
 
         final RelativeLayout first_part=(RelativeLayout)findViewById(R.id.first_part);
         final RelativeLayout second_part=(RelativeLayout)findViewById(R.id.second_part);
