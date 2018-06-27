@@ -7,15 +7,29 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Tab1 extends Fragment{
     private TelephonyManager manager;
 
     public Tab1(){}
+
+    private Connection connection=null;
+
+    private JSONObject object = new JSONObject();
+
+    public void setConnection(Connection con){
+        connection=con;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -53,6 +67,27 @@ public class Tab1 extends Fragment{
         imei.setText(id);
         serial.setText(serialString);
 
+        try {
+            object.put("Manufacturer",manufacturerString);
+            object.put("Model",modelString);
+            object.put("Android SDK",sdkString);
+            object.put("Android version",versionString);
+            object.put("IMEI",id);
+            object.put("serial",serialString);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Button send=(Button)view.findViewById(R.id.sendPhoneInfo);
+        send.setOnClickListener(listener);
+
         return view;
     }
+
+    View.OnClickListener listener=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            connection.send(object.toString());
+        }
+    };
 }

@@ -124,4 +124,11 @@
             android:layout_marginLeft="5dp"/>
     </LinearLayout>
 
+    <Button
+        android:id="@+id/sendPhoneInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/send"
+        android:layout_gravity="center"/>
+
 </LinearLayout>
