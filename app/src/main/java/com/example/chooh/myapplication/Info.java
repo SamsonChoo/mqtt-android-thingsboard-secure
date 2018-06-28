@@ -279,8 +279,6 @@ public class Info extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-                            //connection.send(payload);
-
 //                            try {
 //                                MqttConnectOptions options = new MqttConnectOptions();
 //                                options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
