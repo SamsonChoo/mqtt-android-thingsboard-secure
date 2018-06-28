@@ -98,7 +98,7 @@ public class Connection {
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     // Something went wrong e.g. connection timeout or firewall problems
-                    Log.d(TAG, "Failure " + exception.toString());
+                    //Log.d(TAG, "Failure " + exception.toString());
 
                 }
             });

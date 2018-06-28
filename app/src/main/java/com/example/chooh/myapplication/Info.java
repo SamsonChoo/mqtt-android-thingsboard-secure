@@ -500,18 +500,21 @@ public class Info extends AppCompatActivity {
                         String sensorName=Sensor.substring(0,1).toUpperCase()
                                 +Sensor.substring(1,Sensor.length()).toLowerCase();
 
+                        Sensor tmpSensor=null;
+                        for(Sensor s:sensors){
+                            if(sensorAdapter.sensorTypeToString(s.getType()).equals(sensorName)){
+                                tmpSensor=s;
+                                break;
+                            }
+                        }
+
 
                         Log.i("shunqi-edit",sensorName);
                         if(sensorNames.contains(sensorName)){
-                            if(command.equalsIgnoreCase("off")){
+                            if(command.equalsIgnoreCase("off")
+                                    ||command.equalsIgnoreCase("switch")){
                                 //remove sensor from list
-                                Sensor tmpSensor=null;
-                                for(Sensor s:sensors){
-                                    if(sensorAdapter.sensorTypeToString(s.getType()).equals(sensorName)){
-                                        tmpSensor=s;
-                                        break;
-                                    }
-                                }
+
                                 selected.remove(tmpSensor);
                                 sensorNames.remove(sensorName);
                                 manager.unregisterListener(listener);
@@ -532,52 +535,12 @@ public class Info extends AppCompatActivity {
                                 object.put("Longitude",location.getLongitude());
                             }
                         }else{
-                            if(command.equalsIgnoreCase("on")){
+                            if(command.equalsIgnoreCase("on")
+                                    ||command.equalsIgnoreCase("switch")){
                                 //add sensor to list
-                                Sensor tmpSensor=null;
-                                for(Sensor s:sensors){
-                                    if(sensorAdapter.sensorTypeToString(s.getType()).equals(sensorName)){
-                                        tmpSensor=s;
-                                        break;
-                                    }
-                                }
                                 selected.add(tmpSensor);
                                 sensorNames.add(sensorName);
                                 manager.registerListener(listener,tmpSensor,1000000);
-                            }
-                            if(command.equalsIgnoreCase("switch")){
-                                Sensor tmpSensor=null;
-                                for(Sensor s:sensors){
-                                    if(sensorAdapter.sensorTypeToString(s.getType()).equals(sensorName)){
-                                        tmpSensor=s;
-                                        break;
-                                    }
-                                }
-                                if(selected.contains(tmpSensor)){ //if on, turn off
-                                    selected.remove(tmpSensor);
-                                    sensorNames.remove(sensorName);
-                                    manager.unregisterListener(listener);
-                                    for(Sensor s:selected){
-                                        manager.registerListener(listener,s,1000000);
-                                    }
-
-                                    Iterator<String> ki=object.keys();
-                                    ArrayList<String> kl=new ArrayList<>();
-                                    while (ki.hasNext()){
-                                        kl.add(ki.next());
-                                    }
-                                    for(String key:kl){
-                                        object.remove(key);
-                                    }
-
-                                    object.put("Latitude",location.getLatitude());
-                                    object.put("Longitude",location.getLongitude());
-                                }
-                                else{ //if off, turn on
-                                    selected.add(tmpSensor);
-                                    sensorNames.add(sensorName);
-                                    manager.registerListener(listener,tmpSensor,1000000);
-                                }
                             }
                         }
                     }
