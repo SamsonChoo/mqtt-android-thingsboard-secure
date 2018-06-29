@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 
@@ -93,6 +94,7 @@ public class Info extends AppCompatActivity {
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private MqttAndroidClient mqttAndroidClient;
     private Connection connection;
+    TextView message_received;
 
     private String id;
     private TelephonyManager telephonyManager;
@@ -211,31 +213,6 @@ public class Info extends AppCompatActivity {
 
         JSONObject names=null;
 
-//        try{
-//            mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
-//
-//            MqttConnectOptions options = new MqttConnectOptions();
-//            options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
-//
-//            IMqttToken token = mqttAndroidClient.connect(options);
-//            token.setActionCallback(new IMqttActionListener() {
-//                @Override
-//                public void onSuccess(IMqttToken asyncActionToken) {
-//                    //we are connected! subscribe for rpc
-//                    subscribeToTopic();
-//                }
-//
-//                @Override
-//                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                    // Something went wrong e.g. connection timeout or firewall problems
-//                    Log.d(TAG, "Failure " + exception.toString());
-//
-//                }
-//            });
-//        }catch (MqttException e){
-//            e.printStackTrace();
-//        }
-
         try{
             AssetManager assetManager=getAssets();
             InputStream is=assetManager.open("Test.json");
@@ -272,46 +249,10 @@ public class Info extends AppCompatActivity {
                                     object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                 }
                             }
-                            //Log.i("shunqi", object.toString());
-                            //textView.setText(object.toString());
                             time_map.put(0, System.currentTimeMillis());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-
-//                            try {
-//                                MqttConnectOptions options = new MqttConnectOptions();
-//                                options.setSocketFactory(getSSLSocketFactory(getApplicationContext(), certFile, certPwd));
-//
-//                                IMqttToken token = mqttAndroidClient.connect(options);
-//                                token.setActionCallback(new IMqttActionListener() {
-//                                    @Override
-//                                    public void onSuccess(IMqttToken asyncActionToken) {
-//                                        // We are connected
-//                                        Log.d(TAG, "onSuccess");
-//                                        try {
-//                                            String topic = "v1/devices/me/telemetry";
-//                                            byte[] encodedPayload = new byte[0];
-//                                            encodedPayload = payload.getBytes("UTF-8");
-//                                            MqttMessage message = new MqttMessage(encodedPayload);
-//                                            mqttAndroidClient.publish(topic, message);
-//                                            bool = true;
-//                                        } catch (MqttException | UnsupportedEncodingException e) {
-//                                            e.printStackTrace();
-//                                        }
-//                                    }
-//
-//                                    @Override
-//                                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-//                                        // Something went wrong e.g. connection timeout or firewall problems
-//                                        Log.d(TAG, "Failure " + exception.toString());
-//
-//                                    }
-//                                });
-//
-//                            } catch (MqttException e) {
-//                                e.printStackTrace();
-//                            }
                     }
                 }
             }
@@ -399,8 +340,8 @@ public class Info extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //mqttDisconnect();
-        connection.mqttDisconnect();
+        mqttDisconnect();
+        //connection.mqttDisconnect();
         manager.unregisterListener(listener);
     }
 
@@ -432,6 +373,7 @@ public class Info extends AppCompatActivity {
     }
 
     public void subscribeToTopic(){
+        System.out.println("subscribeToTopic in info");
         try {
             mqttAndroidClient.subscribe("v1/devices/me/rpc/request/+", 0, null, new IMqttActionListener() {
                 @Override
@@ -447,35 +389,13 @@ public class Info extends AppCompatActivity {
 
             // THIS DOES NOT WORK!
             mqttAndroidClient.subscribe("v1/devices/me/rpc/request/+", 0, new IMqttMessageListener() {
-//                @Override
-//                public void messageArrived(String topic, MqttMessage message) throws Exception {
-//                    // message Arrived!
-//                    System.out.println("Message: " + topic + " : " + new String(message.getPayload()));
-//                    String[] parts = topic.split("/");
-//                    String requestId = parts[5];
-//                    try {
-//                        if (flashLightStatus)
-//                            flashLightOff();
-//                        else
-//                            flashLightOn();
-//                        TextView message_received = (TextView)findViewById(R.id.message_received);
-//                        message_received.setText(new String(message.getPayload()));
-//                        String msg = "{\"meow\":\"meow\"}";
-//                        topic = "v1/devices/me/rpc/response/" + requestId;
-//                        byte[] encodedPayload = new byte[0];
-//                        encodedPayload = msg.getBytes("UTF-8");
-//                        message = new MqttMessage(encodedPayload);
-//                        mqttAndroidClient.publish(topic, message);
-//                        subscribeToTopic();
-//                    } catch (MqttException | UnsupportedEncodingException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
+
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // message Arrived!
                     String payload = new String(message.getPayload());
-                    System.out.println("Message: " + topic + " : " + payload);
+                    //System.out.println("Message: " + topic + " : " + payload);
+                    System.out.println("shunqi-json: "+payload);
 
                     JSONObject receive=new JSONObject(payload);
 
@@ -485,7 +405,7 @@ public class Info extends AppCompatActivity {
                     if(Sensor.equals("Message")){
                         message_received.setText(command);
                     }
-                    else if(Sensor.equalsIgnoreCase("Light")||Sensor.equalsIgnoreCase("Lights")){
+                    else if(Sensor.equalsIgnoreCase("Torch")||Sensor.equalsIgnoreCase("Torches")){
                         if(command.equalsIgnoreCase("on"))
                             flashLightOn();
                         if(command.equalsIgnoreCase("off"))

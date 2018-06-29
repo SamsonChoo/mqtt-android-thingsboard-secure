@@ -144,6 +144,7 @@ public class MainInfo extends AppCompatActivity {
 
         Sensors sensors=new Sensors();
         sensors.setConfigName(configName);
+        sensors.setConnection(connection);
         adapter.addFrag(sensors, "Sensors");
 
         Tab1 tab1 = new Tab1();

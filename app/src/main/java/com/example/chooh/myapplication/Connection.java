@@ -30,7 +30,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class Connection {
     private MqttAndroidClient mqttAndroidClient;
-    private static String TAG = Info.class.getName();
+    private static String TAG = Connection.class.getName();
     private static String serverUri = "ssl://tb.hpe-innovation.center:8883";
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private static String certFile = "client.bks";

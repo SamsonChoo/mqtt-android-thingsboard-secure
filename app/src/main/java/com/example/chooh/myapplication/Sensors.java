@@ -1,7 +1,9 @@
 package com.example.chooh.myapplication;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -27,6 +29,7 @@ public class Sensors extends Fragment{
     private SensorManager manager;
     private sensorAdapter adapoer;
     private String configName="";
+    private Connection connection=null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,6 +70,10 @@ public class Sensors extends Fragment{
         configName=name;
     }
 
+    public void setConnection(Connection con){
+        connection=con;
+    }
+
     View.OnClickListener listener=new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -77,14 +84,39 @@ public class Sensors extends Fragment{
                 if (b) length++;
             }
 
-
             if(context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE)!=PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(context,"Please enable the PHONE permission!",Toast.LENGTH_LONG).show();
                 return;
             }
 
             if(length==0){
-                Toast.makeText(context,"Please select one sensor!",Toast.LENGTH_LONG).show();
+                final int flen=length;
+                final ArrayList<Boolean> fba=ba;
+                final Context fcontext=context;
+                AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+                alertDialog.setTitle("Alert");
+                alertDialog.setMessage("You haven't choose any sensor.");
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "I'm sure.",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                int[] ia = new int[flen];
+                                int pointer = 0;
+                                for (int i = 0; i < fba.size(); i++) {
+                                    if (fba.get(i)) {
+                                        ia[pointer++] = i;
+                                    }
+                                }
+
+                                Intent intent=new Intent(fcontext, Info.class);
+                                intent.putExtra("select",ia);
+                                intent.putExtra("configName",configName);
+                                Log.i("shunqi",configName);
+                                connection.mqttDisconnect();
+                                startActivity(intent);
+                            }
+                        });
+                alertDialog.show();
                 return;
             }
 
@@ -100,6 +132,7 @@ public class Sensors extends Fragment{
             intent.putExtra("select",ia);
             intent.putExtra("configName",configName);
             Log.i("shunqi",configName);
+            connection.mqttDisconnect();
             startActivity(intent);
         }
     };
