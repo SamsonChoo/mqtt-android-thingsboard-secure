@@ -150,7 +150,10 @@ public class MainInfo extends AppCompatActivity {
         Tab1 tab1 = new Tab1();
         tab1.setConnection(connection);
         adapter.addFrag(tab1, "Phone Info");
-        adapter.addFrag(new Tab2(), "Message");
+
+        Tab2 tab2 = new Tab2();
+        tab2.setConnection(connection);
+        adapter.addFrag(tab2, "Message");
 
         Tab3 tab3=new Tab3();
         tab3.setConnection(connection);
