@@ -60,6 +60,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -417,8 +419,16 @@ public class Info extends AppCompatActivity {
                                 flashLightOn();
                     }
                     else {
-                        String sensorName=Sensor.substring(0,1).toUpperCase()
-                                +Sensor.substring(1,Sensor.length()).toLowerCase();
+                        String[] name=Sensor.split(" ");
+                        String sensorName="";
+                        for(int i=0;i<name.length;i++){
+                            if(i==0){
+                                sensorName+=uniform(name[i]);
+                            }else {
+                                sensorName+=" "+uniform(name[i]);
+                            }
+                        }
+                        Log.i("shunqi-json",sensorName);
 
                         Sensor tmpSensor=null;
                         for(Sensor s:sensors){
@@ -428,8 +438,6 @@ public class Info extends AppCompatActivity {
                             }
                         }
 
-
-                        Log.i("shunqi-edit",sensorName);
                         if(sensorNames.contains(sensorName)){
                             if(command.equalsIgnoreCase("off")
                                     ||command.equalsIgnoreCase("switch")){
@@ -519,5 +527,10 @@ public class Info extends AppCompatActivity {
             flashLightStatus = false;
         } catch (CameraAccessException e) {
         }
+    }
+
+    public String uniform(String input){
+        return input.substring(0,1).toUpperCase()
+                +input.substring(1,input.length()).toLowerCase();
     }
 }

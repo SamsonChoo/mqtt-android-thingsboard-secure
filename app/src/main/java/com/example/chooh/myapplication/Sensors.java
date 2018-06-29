@@ -29,7 +29,6 @@ public class Sensors extends Fragment{
     private SensorManager manager;
     private sensorAdapter adapoer;
     private String configName="";
-    private Connection connection=null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,10 +69,6 @@ public class Sensors extends Fragment{
         configName=name;
     }
 
-    public void setConnection(Connection con){
-        connection=con;
-    }
-
     View.OnClickListener listener=new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -111,8 +106,6 @@ public class Sensors extends Fragment{
                                 Intent intent=new Intent(fcontext, Info.class);
                                 intent.putExtra("select",ia);
                                 intent.putExtra("configName",configName);
-                                Log.i("shunqi",configName);
-                                connection.mqttDisconnect();
                                 startActivity(intent);
                             }
                         });
@@ -131,8 +124,6 @@ public class Sensors extends Fragment{
             Intent intent=new Intent(context, Info.class);
             intent.putExtra("select",ia);
             intent.putExtra("configName",configName);
-            Log.i("shunqi",configName);
-            connection.mqttDisconnect();
             startActivity(intent);
         }
     };
