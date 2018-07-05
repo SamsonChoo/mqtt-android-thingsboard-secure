@@ -57,7 +57,6 @@ public class Sensors extends Fragment{
             @Override
             public void onClick(View v) {
                 adapoer.reset();
-                ///////////recreate();
                 getActivity().recreate();
             }
         });
