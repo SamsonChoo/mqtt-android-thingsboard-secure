@@ -91,7 +91,7 @@ public class Info extends AppCompatActivity {
     private static String server="";
     private static String port="";
     private static String certFile = "client.bks";
-    private static String certPwd = "P@ssw0rd";
+    private static String certPwd = ""; //password hidden to protect company information
     private static String channel;
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private MqttAndroidClient mqttAndroidClient;
