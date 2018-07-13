@@ -3,5 +3,5 @@ Android app that sends sensor data to and receive commands from a thingsboard Da
 MQTTs protocol currently used, may include HTTPs protocol in the future.
 
 Dashboard
-(app/src/main/res/drawable/thingsboard1.png)
-(app/src/main/res/drawable/thingsboard2.png)
+![screenshot1](app/src/main/res/drawable/thingsboard1.png)
+![screenshot2](app/src/main/res/drawable/thingsboard2.png)
