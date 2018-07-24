@@ -83,8 +83,8 @@ public class Info extends AppCompatActivity {
     final JSONObject object=new JSONObject();
     JSONObject toSend=new JSONObject();
 
-    private final Map<Integer,Long> time_map=new HashMap<>();
     private final int interval=200;
+    final Handler handler=new Handler();
 
 
     private static String configName;
@@ -249,7 +249,6 @@ public class Info extends AppCompatActivity {
                                     object.put(sensorNames.get(i) + "-" + (String) nameArray.get(x), event.values[x]);
                                 }
                             }
-                            time_map.put(0, System.currentTimeMillis());
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -264,7 +263,6 @@ public class Info extends AppCompatActivity {
             manager.registerListener(listener,s,1000000);
         }
 
-        final Handler handler=new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -347,6 +345,7 @@ public class Info extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
         mqttDisconnect();
         //connection.mqttDisconnect();
         manager.unregisterListener(listener);
