@@ -40,9 +40,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -62,12 +64,10 @@ public class MainInfo extends AppCompatActivity {
     private ViewPager mViewPager;
 
     private String configName="";
-    private static String TAG = Info.class.getName();
-    private static String serverUri = "ssl://tb.hpe-innovation.center:8883";
+    private static String serverUri = "";
     private static String server="";
     private static String port="";
-    private static String certFile = "client.bks";
-    private static String certPwd = "P@ssw0rd";
+    private static String certPwd = "";
     private static String channel;
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
     private MqttAndroidClient mqttAndroidClient;
@@ -93,6 +93,7 @@ public class MainInfo extends AppCompatActivity {
             while ((line=br.readLine())!=null){
                 configContent+=line;
             }
+            br.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -112,8 +113,6 @@ public class MainInfo extends AppCompatActivity {
                         port=o.getString("port");
                         certPwd =o.getString("pwd");
                         channel=o.getString("channel");
-                        uri= Uri.parse(o.getString("uri"));
-                        certFile=o.getString("fileName");
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
@@ -125,7 +124,7 @@ public class MainInfo extends AppCompatActivity {
             serverUri ="ssl://" + server+ ":" + port;
         }
 
-        connection=new Connection(serverUri,clientId,certFile,certPwd,uri,getApplicationContext());
+        connection=new Connection(serverUri,clientId,certPwd,configName,getApplicationContext());
         connection.setup();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -161,6 +160,7 @@ public class MainInfo extends AppCompatActivity {
         Tab4 tab4=new Tab4();
         tab4.setConnection(connection);
         adapter.addFrag(tab4, "Storage");
+
         viewPager.setAdapter(adapter);
     }
 

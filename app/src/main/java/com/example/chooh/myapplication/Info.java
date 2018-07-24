@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -80,6 +81,7 @@ public class Info extends AppCompatActivity {
     final ArrayList<String> sensorNames=new ArrayList<>();
     ArrayList<Sensor> sensors=new ArrayList<>();
     final JSONObject object=new JSONObject();
+    JSONObject toSend=new JSONObject();
 
     private final Map<Integer,Long> time_map=new HashMap<>();
     private final int interval=200;
@@ -87,10 +89,9 @@ public class Info extends AppCompatActivity {
 
     private static String configName;
     private static String TAG = Info.class.getName();
-    private static String serverUri = "ssl://tb.hpe-innovation.center:8883";
+    private static String serverUri = "";
     private static String server="";
     private static String port="";
-    private static String certFile = "client.bks";
     private static String certPwd = ""; //password hidden to protect company information
     private static String channel;
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
@@ -100,7 +101,6 @@ public class Info extends AppCompatActivity {
 
     private String id;
     private TelephonyManager telephonyManager;
-    private Uri uri=null;
 
     boolean bool = true;
 
@@ -132,6 +132,7 @@ public class Info extends AppCompatActivity {
             while ((line=br.readLine())!=null){
                 configContent+=line;
             }
+            br.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -151,8 +152,6 @@ public class Info extends AppCompatActivity {
                         port=o.getString("port");
                         certPwd =o.getString("pwd");
                         channel=o.getString("channel");
-                        uri=Uri.parse(o.getString("uri"));
-                        certFile=o.getString("fileName");
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
@@ -160,20 +159,19 @@ public class Info extends AppCompatActivity {
 
             }
         }
-        Log.i("shunqi",uri.toString());
 
         if(!server.equals("")&&!port.equals("")){
             serverUri ="ssl://" + server+ ":" + port;
         }
 
-        connection=new Connection(serverUri,clientId,certFile,certPwd,uri,getApplicationContext());
+        connection=new Connection(serverUri,clientId,certPwd,configName,getApplicationContext());
         connection.setup();
 
         try{
             mqttAndroidClient = new MqttAndroidClient(this, serverUri, clientId);
 
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setSocketFactory(getSSLSocketFactory(this, certFile, certPwd));
+            options.setSocketFactory(getSSLSocketFactory(certPwd));
 
             IMqttToken token = mqttAndroidClient.connect(options);
             token.setActionCallback(new IMqttActionListener() {
@@ -225,8 +223,8 @@ public class Info extends AppCompatActivity {
             while ((st=br.readLine())!=null){
                 content+=st;
             }
+            br.close();
             names=new JSONObject(content);
-            Log.i("shunqi",names.toString());
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -270,8 +268,15 @@ public class Info extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                Long tsLong=System.currentTimeMillis();
+                try{
+                    toSend.put("ts",tsLong.toString());
+                    toSend.put("values",object);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
                 textView.setText(object.toString());
-                connection.send(object.toString());
+                connection.send(toSend.toString());
                 handler.postDelayed(this,200);
             }
         },200);
@@ -348,21 +353,23 @@ public class Info extends AppCompatActivity {
     }
 
 
-    private SSLSocketFactory getSSLSocketFactory(Context context, String keystore, String password) throws
+    private SSLSocketFactory getSSLSocketFactory(String password) throws
             MqttSecurityException {
         try {
-            InputStream keyStore = getContentResolver().openInputStream(uri);
+            InputStream keyStore=openFileInput(configName);
             System.out.println("asdf"+keyStore);
-            //InputStream keyStore =context.getResources().getAssets().open(keystore);
             KeyStore km = KeyStore.getInstance("BKS");
             km.load(keyStore, password.toCharArray());
+            keyStore.close();
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
             kmf.init(km, password.toCharArray());
 
-            InputStream trustStore = getContentResolver().openInputStream(uri);
+            //InputStream trustStore=new FileInputStream(bks);
+            InputStream trustStore = openFileInput(configName);
             System.out.println("asdf"+trustStore);
             KeyStore ts = KeyStore.getInstance("BKS");
             ts.load(trustStore, password.toCharArray());
+            trustStore.close();
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
             tmf.init(ts);
 

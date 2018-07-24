@@ -30,12 +30,17 @@ import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Configuration extends AppCompatActivity {
@@ -48,7 +53,6 @@ public class Configuration extends AppCompatActivity {
     private TextView keyFile;
     private JSONArray array=null;
     private Uri uri=null;
-    private String fileName="";
 
     private static final int READ_REQUEST_CODE=42;
 
@@ -82,6 +86,8 @@ public class Configuration extends AppCompatActivity {
 
 
         File dir=this.getFilesDir();
+        File[] files=dir.listFiles();
+        ArrayList<File> fa=new ArrayList<>(Arrays.asList(files));
         final File file=new File(dir,configs);
 
         String content="";
@@ -91,14 +97,15 @@ public class Configuration extends AppCompatActivity {
             while ((line=br.readLine())!=null){
                 content+=line;
             }
+            br.close();
         }catch (Exception e){
             e.printStackTrace();
         }
 
         Log.i("shunqi",content);
+        Log.i("shunqi",fa.toString());
         if(content.equals("[]")||content.equals("")){
             array=new JSONArray();
-            File fileNew=new File(this.getFilesDir(),configs);
         }else{
             firstTime.setVisibility(View.GONE);
             try{
@@ -217,6 +224,35 @@ public class Configuration extends AppCompatActivity {
                     String portSave=port.getText().toString();
                     String pwdSave=keyPwd.getText().toString();
 
+                    String bksContent="";
+                    try{
+                        InputStream is=getContentResolver().openInputStream(uri);
+//                        BufferedReader br=new BufferedReader(new InputStreamReader(is));
+//                        String line;
+//                        while((line=br.readLine())!=null){
+//                            bksContent+=line;
+//                        }
+//                        br.close();
+
+                        FileOutputStream outputStream=openFileOutput(nameSave, Context.MODE_PRIVATE);
+                        byte[] buffer=new byte[1024];
+                        int read;
+                        while ((read=is.read(buffer))!=-1){
+                            outputStream.write(buffer,0,read);
+                        }
+
+                        is.close();
+                        is=null;
+                        outputStream.flush();
+                        outputStream.close();
+                        outputStream=null;
+
+                        //outputStream.write(bksContent.getBytes());
+                        //outputStream.close();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
+
                     int pos=channel.getSelectedItemPosition();
                     String channelSave;
                     if(pos==0){
@@ -232,8 +268,6 @@ public class Configuration extends AppCompatActivity {
                         objectSave.put("port",portSave);
                         objectSave.put("pwd",pwdSave);
                         objectSave.put("channel",channelSave);
-                        objectSave.put("uri",uri.toString());
-                        objectSave.put("fileName",fileName);
                         array.put(objectSave);
 
                         FileOutputStream outputStream;
@@ -297,7 +331,20 @@ public class Configuration extends AppCompatActivity {
                                     }
                                 }
 
-                                objects.remove(configSpinner.getSelectedItemPosition());
+                                int index=configSpinner.getSelectedItemPosition();
+                                JSONObject object=objects.get(index);
+                                String configName="";
+                                try{
+                                    configName=object.getString("name");
+                                }catch (JSONException e){
+                                    e.printStackTrace();
+                                }
+                                File toDelete=new File(Configuration.this.getFilesDir(),configName);
+                                boolean deleted=toDelete.delete();
+                                File toDelete2=new File(Configuration.this.getFilesDir(),configName+".bks");
+                                boolean deleted2=toDelete2.delete();
+
+                                objects.remove(index);
                                 array=new JSONArray(objects);
 
                                 FileOutputStream outputStream;
@@ -330,7 +377,6 @@ public class Configuration extends AppCompatActivity {
         if(requestCode==READ_REQUEST_CODE && resultCode== Activity.RESULT_OK){
             if(resultData!=null){
                 uri=resultData.getData();
-                Log.i("shunqi","Uri: "+uri.toString());
                 if(uri!=null){
                     setFileName(uri);
                 }
@@ -346,11 +392,9 @@ public class Configuration extends AppCompatActivity {
                 String displayName=cursor.getString(
                         cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                 );
-                Log.i("shunqi",displayName);
                 if(!displayName.equals("")){
                     keyFile.setText(displayName);
                     keyFile.setVisibility(View.VISIBLE);
-                    fileName=displayName;
                 }
             }
         }finally {
@@ -383,7 +427,6 @@ public class Configuration extends AppCompatActivity {
                 first=false;
             }else {
                 long now=System.currentTimeMillis();
-                Log.i("shunqi",(now-start)+"");
                 if(now-start<5000){
                     finish();
                     moveTaskToBack(true);

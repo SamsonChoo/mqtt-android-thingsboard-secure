@@ -1,8 +1,12 @@
 package com.example.chooh.myapplication;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
+
+import com.google.common.io.Files;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -13,9 +17,16 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.Buffer;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -31,19 +42,17 @@ import javax.net.ssl.TrustManagerFactory;
 public class Connection {
     private MqttAndroidClient mqttAndroidClient;
     private static String TAG = Connection.class.getName();
-    private static String serverUri = "ssl://tb.hpe-innovation.center:8883";
+    private static String serverUri = "";
     private static String clientId = "MQTT_SSL_ANDROID_CLIENT_BKS";
-    private static String certFile = "client.bks";
-    private static String certPwd = "P@ssw0rd";
-    private Uri uri=null;
+    private static String certPwd = "";
+    private static String configName="";
     private Context context=null;
 
-    public Connection(String server,String id,String file,String pwd,Uri uri,Context context){
+    public Connection(String server,String id,String pwd,String configName,Context context){
         serverUri=server;
         clientId=id;
-        certFile=file;
         certPwd=pwd;
-        this.uri=uri;
+        this.configName=configName;
         this.context=context;
     }
 
@@ -52,7 +61,7 @@ public class Connection {
             mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientId);
 
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setSocketFactory(getSSLSocketFactory(context, certFile, certPwd));
+            options.setSocketFactory(getSSLSocketFactory(context, certPwd));
 
             IMqttToken token = mqttAndroidClient.connect(options);
             token.setActionCallback(new IMqttActionListener() {
@@ -77,7 +86,7 @@ public class Connection {
     public void send(final String toSend){
         try {
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setSocketFactory(getSSLSocketFactory(context, certFile, certPwd));
+            options.setSocketFactory(getSSLSocketFactory(context, certPwd));
 
             IMqttToken token = mqttAndroidClient.connect(options);
             token.setActionCallback(new IMqttActionListener() {
@@ -108,21 +117,23 @@ public class Connection {
         }
     }
 
-    private SSLSocketFactory getSSLSocketFactory(Context context, String keystore, String password) throws
+    private SSLSocketFactory getSSLSocketFactory(Context context, String password) throws
             MqttSecurityException {
         try {
-            InputStream keyStore = context.getContentResolver().openInputStream(uri);
+            FileInputStream keyStore=context.openFileInput(configName);
+
             System.out.println("asdf"+keyStore);
-            //InputStream keyStore =context.getResources().getAssets().open(keystore);
             KeyStore km = KeyStore.getInstance("BKS");
             km.load(keyStore, password.toCharArray());
+            keyStore.close();
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("X509");
             kmf.init(km, password.toCharArray());
 
-            InputStream trustStore = context.getContentResolver().openInputStream(uri);
+            FileInputStream trustStore=context.openFileInput(configName);
             System.out.println("asdf"+trustStore);
             KeyStore ts = KeyStore.getInstance("BKS");
             ts.load(trustStore, password.toCharArray());
+            trustStore.close();
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
             tmf.init(ts);
 
